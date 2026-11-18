@@ -119,6 +119,23 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 .stat span { font-size: 12px; color: var(--mist-dim); letter-spacing: .04em; }
 .stat b { font-family: var(--font-pixel); font-weight: 700; font-size: 24px; color: var(--mist); font-variant-numeric: tabular-nums; }
 .kbd { font-size: 12px; color: var(--mist-dim); }
+#devPanel { position: fixed; z-index: 30; top: calc(env(safe-area-inset-top, 0px) + 64px); right: calc(env(safe-area-inset-right, 0px) + 12px);
+  width: min(340px, calc(100vw - 24px)); max-height: calc(100% - 84px); box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain;
+  background: rgba(12, 22, 26, 0.95); border: 2px solid var(--amber); padding: 10px 12px; font-size: 12px; color: var(--mist); touch-action: pan-y; }
+.dev-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.dev-head b { font-family: var(--font-pixel); color: var(--amber); font-size: 15px; }
+#devBadge { margin-right: auto; font-family: var(--font-pixel); color: var(--jade); }
+#devPanel button { font: 600 12px var(--font-body); background: var(--panel-2); color: var(--mist); border: 1px solid var(--line); border-radius: 2px; padding: 6px 8px; cursor: pointer; touch-action: manipulation; }
+#devPanel button.on { border-color: var(--jade); color: var(--jade); }
+#devPanel button:focus-visible, #devPanel input:focus-visible { outline: 2px solid var(--amber); }
+.dev-actions { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+#devPanel details { border-top: 1px solid var(--line); padding: 6px 0; }
+#devPanel summary { cursor: pointer; font-weight: 700; color: var(--amber); padding: 2px 0; }
+.dev-note { color: var(--mist-dim); margin-top: 4px; }
+.dev-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 62px; gap: 6px; align-items: center; margin-top: 6px; }
+.dev-row input[type=range] { width: 100%; min-width: 0; accent-color: var(--amber); }
+.dev-row input[type=number] { width: 100%; box-sizing: border-box; background: #0a1012; color: var(--mist); border: 1px solid var(--line); padding: 3px 4px; font: 12px var(--font-body); -webkit-user-select: text; user-select: text; }
+#devOut { width: 100%; height: 140px; margin-top: 8px; box-sizing: border-box; background: #0a1012; color: var(--mist); font: 11px monospace; -webkit-user-select: text; user-select: text; }
 @media (hover: none) { .kbd { display: none; } }
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
 </style>
@@ -127,6 +144,13 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 <canvas id="game" aria-label="게임 화면"></canvas>
 <div id="probe"></div>
 <button id="pauseBtn" type="button" aria-label="일시정지" hidden>II</button>
+<aside id="devPanel" hidden aria-label="개발자 모드">
+  <div class="dev-head"><b>DEV</b><span id="devBadge"></span>
+    <button type="button" id="devCopy">값 복사</button><button type="button" id="devReset">기본값</button><button type="button" id="devClose">닫기</button></div>
+  <div class="dev-actions" id="devActions"></div>
+  <div id="devBody"></div>
+  <textarea id="devOut" hidden readonly></textarea>
+</aside>
 
 <div id="ovStart" class="overlay">
   <div class="panel">
@@ -134,8 +158,8 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
     <h1>등불 파수꾼</h1>
     <p>새벽이 올 때까지 등불을 지키세요. 사방에서 몰려오는 어둠을 물리치고, 떨어진 별조각을 모아 강해지세요.</p>
     <div class="rules">
-      <div class="rule"><b>이동</b><span>화면 아무 곳이나 누르고 끌기. 키보드는 WASD·방향키</span></div>
-      <div class="rule"><b>공격</b><span>가까운 적을 자동으로 벱니다. 움직임에만 집중하세요</span></div>
+      <div class="rule"><b>이동</b><span>모바일: 화면을 누르고 끌기 · PC: WASD·방향키</span></div>
+      <div class="rule"><b>공격</b><span>자동 공격. 모바일은 가까운 적을, PC는 마우스 방향을 벱니다</span></div>
       <div class="rule"><b>성장</b><span>레벨업하면 고른 무기의 기술 중 하나를 올립니다</span></div>
       <div class="rule"><b>파밍</b><span>보물상자·회복약·자석·폭탄·금화가 맵에 떨어집니다</span></div>
     </div>
@@ -157,7 +181,7 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 
 <div id="ovPause" class="overlay" hidden>
   <div class="panel">
-    <div class="eyebrow">일시정지</div>
+    <div class="eyebrow" id="pauseEyebrow">일시정지</div>
     <h2>잠시 숨을 고릅니다</h2>
     <div class="stats" id="pauseStats"></div>
     <div class="actions">
@@ -197,15 +221,21 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 const CONFIG = {
   DURATION: 15 * 60 + 57,   // 15분 57초
   FIELD_ITEM_RATE: 0.6,     // 맵에 자연 생성되는 아이템 빈도 배수 (3/5)
+  PLAYER: { speed: 170, hp: 100, magnet: 110 },  // 캐릭터 기본 수치
+  ENEMY_DMG_MULT: 1,        // 적 공격력 배수 (즉시 적용)
+  ENEMY_SPEED_MULT: 1,      // 적 이동 속도 배수 (즉시 적용)
+  SPAWN_MULT: 1,            // 적 등장량 배수
   TICK: 1 / 60,             // 고정 시뮬레이션 간격
-  MAX_ENEMIES: 260,
+  MAX_ENEMIES: 250,
   SPAWN_RADIUS: 820,
   DESPAWN_RADIUS: 1300,
   MAX_GEMS: 320,
   MAX_ITEMS: 28,
   PAUSE_ON_LEVELUP: true,   // 솔로 전용. 멀티에서는 false (선택 중에도 시간 흐름)
-  BOSS_TIMES: [300, 600, 900],
-  ENEMY_HP_MULT: 2,         // 모든 적(보스 포함) 체력 배수
+  BOSS_TIMES: [300, 420],        // 보스 등장: 5분, 7분 (최후의 수문장은 시간 종료 후)
+  BOSS_HP_MULT: 0.6,             // 모든 보스 체력 배수
+  FINAL_BOSS_DELAY: 2,           // 시간 종료 → 잡몹 정리 후 최후의 수문장 등장까지(초)
+  ENEMY_HP_MULT: 2.3,       // 모든 적(보스 포함) 체력 배수
   MASTERY_PER_LEVEL: 0.02,  // 레벨당 무기 피해 증가 (숙련)
 };
 
@@ -228,15 +258,20 @@ const COMMON_NODES = {
 const WEAPONS = {
   sword: {
     name: '한손검', glyph: '†', color: '#bfe8ff',
-    blurb: '빠르게 연달아 베는 검. 검기와 연속 베기로 성장합니다.',
-    rating: [['공격력', 2], ['속도', 5], ['범위', 2]],
-    base: { dmg: 16, cd: 0.42, range: 72, arc: 1.9, kb: 150 },
+    blurb: '가볍고 빠른 검. 치명타와 신체각성으로 성장합니다.',
+    rating: [['공격력', 2], ['속도', 4], ['범위', 2]],
+    base: { dmg: 21, cd: 0.48, range: 75, arc: Math.PI / 2, kb: 150 },  // arc 90°
     spinTable: [0, 5, 4, 3],
     evolutions: {
-      combo: { name: '연속 베기', glyph: '≡', color: '#bfe8ff', desc: '모든 공격이 2회 연속으로 나갑니다' },
-      wave:  { name: '검기',      glyph: '≫', color: '#86b8ff', desc: '벨 때마다 공격 범위만 한 검기를 앞으로 날립니다. 적을 관통하고, 관통할 때마다 피해 -40%' },
+      awaken: { name: '신체각성', glyph: '✶', color: '#ff9e6b',
+        desc: '이동 속도 +15%, 공격 회피 10%, 초당 체력 1.2 재생',
+        upDesc: '얻는 모든 체력 회복량 +50% (재생·회복약 포함)' },
     },
     nodes: {
+      crit:    { name: '급소 찌르기', glyph: '!', color: '#ffd27a', max: 4, mod: { crit: 0.10 },
+        desc: lv => `치명타 확률 ${(lv - 1) * 10}% → ${lv * 10}%` },
+      critDmg: { name: '치명상',     glyph: '‼', color: '#ff9e6b', max: 4, mod: { critDmg: 0.25 },
+        desc: lv => `치명타 피해 ${200 + (lv - 1) * 25}% → ${200 + lv * 25}%` },
       edge:   { name: '날 세우기',   glyph: '◆', color: '#ffb547', max: 5, desc: '피해량 +20%', mod: { dmg: 0.2 } },
       tempo:  { name: '빠른 손놀림', glyph: '»', color: '#9be7c4', max: 5, desc: '공격 속도 +12%', mod: { aspd: 0.12 } },
       reach:  { name: '긴 칼날',     glyph: '↔', color: '#ffd9a0', max: 4, desc: '공격 범위 +12%', mod: { range: 0.12 } },
@@ -249,13 +284,13 @@ const WEAPONS = {
   },
   greatsword: {
     name: '양손검', glyph: '‡', color: '#ffd27a',
-    blurb: '느리지만 넓고 묵직한 일격. 충격파와 처형으로 성장합니다.',
+    blurb: '느리지만 넓고 묵직한 일격. 충격파와 회오리로 성장합니다.',
     rating: [['공격력', 5], ['속도', 2], ['범위', 4]],
-    base: { dmg: 34, cd: 1.15, range: 90, arc: 2.9, kb: 800, fwd: 0.3 },  // fwd: 정면 사거리 추가 비율
+    base: { dmg: 35, cd: 1.33, range: 90, arc: 2.9, kb: 500, fwd: 0.3 },  // fwd: 정면 사거리 추가 비율
     spinTable: [0],
     evolutions: {
-      whirl:   { name: '회오리', glyph: '◎', color: '#d6b8ff', desc: '기본 공격이 회전 베기로 바뀝니다. 1.5초마다 회전하고, 공격 속도가 오를수록 더 오래 돕니다' },
-      execute: { name: '처형',   glyph: '✕', color: '#ef5a6f', desc: '체력 15% 이하인 적을 맞히면 남은 체력만큼 피해를 줘 즉시 처형합니다 (보스는 피해 2배)' },
+      whirl:   { name: '회오리', glyph: '◎', color: '#d6b8ff', desc: '기본 공격이 회전 베기로 바뀝니다. 1.5초마다 회전하고, 공격 속도가 오를수록 더 오래 돕니다',
+        upDesc: '회전 중 타격 간격 0.2초 → 0.12초 (한 번 돌 때 더 많이 벱니다)' },
     },
     nodes: {
       heavy:   { name: '묵직한 일격', glyph: '◆', color: '#ffb547', max: 5, desc: '피해량 +20%', mod: { dmg: 0.2 } },
@@ -279,11 +314,23 @@ const EVO = {
   waveDist: 340,        // 검기: 날아가는 거리
   waveSpeed: 460,
   whirlCd: 1.5,         // 회오리: 공격 주기(고정)
-  whirlTime: 0.6,       // 회오리: 기본 회전 시간 (× 공격 속도 배수)
+  whirlTime: 0.8,       // 회오리: 기본 회전 시간 (× 공격 속도 배수)
   whirlRot: 0.2,        // 회오리: 한 바퀴 시간 (한 바퀴마다 1회 타격)
-  whirlDmg: 0.55,       // 회오리: 한 바퀴 피해 배수
+  whirlDmg: 0.6,        // 회오리: 한 바퀴 피해 배수
+  whirlRotUp: 0.12,     // 회오리 강화: 한 바퀴(타격 간격) 시간
+  awakenSpeed: 0.15,    // 신체각성: 이동 속도
+  awakenDodge: 0.10,    // 신체각성: 공격 회피 확률
+  awakenRegen: 1.2,     // 신체각성: 초당 체력 재생
+  awakenHealUp: 1.5,    // 신체각성 강화: 체력 회복량 배수
   executeAt: 0.15,      // 처형: 발동 체력 비율
   executeBossMult: 2,   // 처형: 보스에게는 피해 배수
+};
+
+/* 새 무기에 붙일 진화 보관함 (효과 코드는 그대로 동작: evo 키를 무기 evolutions에 넣으면 사용됨) */
+const EVO_LIBRARY = {
+  combo:   { name: '연속 베기', glyph: '≡', color: '#bfe8ff', desc: '모든 공격이 2회 연속으로 나갑니다' },
+  wave:    { name: '검기',      glyph: '≫', color: '#86b8ff', desc: '벨 때마다 공격 범위만 한 검기를 앞으로 날립니다. 적을 관통하고, 관통할 때마다 피해 -40%' },
+  execute: { name: '처형',      glyph: '✕', color: '#ef5a6f', desc: '체력 15% 이하인 적을 맞히면 남은 체력만큼 피해를 줘 즉시 처형합니다 (보스는 피해 2배)' },
 };
 
 const ENEMY_TYPES = {
@@ -299,14 +346,13 @@ const ITEM_TYPES = {
   coin:   { name: '금화',     weight: 34 },
   magnet: { name: '자석',     weight: 15 },
   bomb:   { name: '폭탄',     weight: 14 },
-  chest:  { name: '보물상자', weight: 11 },
 };
 
 /* ---------------- 2. STATE (pure, serializable data) ---------------- */
 function createState(seed = (Math.random() * 2 ** 31) | 0) {
   return {
     seed, rng: seed | 0, time: 0, tick: 0, phase: 'playing', nextId: 1,
-    players: {}, enemies: [], projectiles: [], gems: [], items: [], waveHits: {},
+    players: {}, enemies: [], projectiles: [], gems: [], items: [], waveHits: {}, final: null,  // final: 시간 종료 후 최후의 수문장 단계
     spawnAcc: 0, itemTimer: 10 / CONFIG.FIELD_ITEM_RATE, waveTimer: 90, bossIndex: 0,
     actions: [],   // 플레이어 → 시뮬레이션 (예: 레벨업 선택)
     events: [],    // 시뮬레이션 → 렌더러 (이펙트 전용, 매 프레임 비움)
@@ -320,7 +366,7 @@ function createPlayer(id, name, hue, weaponKey = 'sword') {
     level: 1, xp: 0, xpNext: xpForLevel(1), pendingLevels: 0, choices: null, choiceSeq: 0,
     kills: 0, gold: 0, chests: 0,
     weaponKey, build: {},  // build: { 노드키: 레벨 }
-    evos: [], evoOffer: false,  // 진화: 얻은 목록 / 30레벨 선택 대기
+    evos: [], evoUps: [], evoOffer: false,  // 진화: 얻은 목록 / 30레벨 선택 대기
     atk: { t: 0.3, count: 0, pending: 0, qt: 0, angle: 0, mirror: false, swingT: 0, spinLeft: 0, rotT: 0, spinT: 0 },
     stats: null,
   };
@@ -338,21 +384,24 @@ function addPlayer(s, id, opts = {}) {
 
 function recalcStats(p) {
   const W = WEAPONS[p.weaponKey];
-  const m = { dmg: 0, aspd: 0, range: 0, spin: 0, armor: 0, speed: 0, hp: 0, quake: 0, killHeal: 0, xp: 0, magnet: 0, vision: 0 };
+  const m = { dmg: 0, aspd: 0, range: 0, spin: 0, armor: 0, speed: 0, hp: 0, quake: 0, killHeal: 0, xp: 0, magnet: 0, vision: 0, crit: 0, critDmg: 0 };
+  const evo = Object.fromEntries((p.evos || []).map(k => [k, true])), evoUp = Object.fromEntries((p.evoUps || []).map(k => [k, true]));
   for (const k in p.build) { const N = W.nodes[k]; for (const st in N.mod) m[st] += N.mod[st] * p.build[k]; }
   const oldMax = p.maxHp;
   p.stats = {
-    speed: 165 * (1 + m.speed), magnet: 110 * (1 + m.magnet), xpMult: 1 + m.xp, vision: Math.min(5, m.vision), armor: m.armor, regen: 0, killHeal: m.killHeal,
+    speed: CONFIG.PLAYER.speed * (1 + m.speed + (evo.awaken ? EVO.awakenSpeed : 0)), magnet: CONFIG.PLAYER.magnet * (1 + m.magnet), xpMult: 1 + m.xp, vision: Math.min(5, m.vision), armor: m.armor, killHeal: m.killHeal,
+    regen: evo.awaken ? EVO.awakenRegen : 0, dodge: evo.awaken ? EVO.awakenDodge : 0, healMult: evoUp.awaken ? EVO.awakenHealUp : 1,
+    crit: m.crit, critMult: 2 + m.critDmg, whirlRot: evoUp.whirl ? EVO.whirlRotUp : EVO.whirlRot, evoUp,
     dmg: 1 + m.dmg, aspd: 1 + m.aspd, range: 1 + m.range,
     spinEvery: W.spinTable[m.spin] || 0, quake: m.quake,
-    evo: Object.fromEntries((p.evos || []).map(k => [k, true])),
+    evo,
   };
-  p.maxHp = 100 + m.hp;
+  p.maxHp = CONFIG.PLAYER.hp + m.hp;
   if (p.maxHp > oldMax) p.hp += p.maxHp - oldMax;
 }
 
 /* 레벨업 경험치: 기본 곡선 × 구간 배수. [시작 레벨, 배수] — 해당 레벨부터 다음 구간 전까지 적용 */
-const XP_BRACKETS = [[1, 1.2], [30, 1.5], [40, 4.5], [50, 6.0]];
+const XP_BRACKETS = [[1, 1.2], [30, 1.4], [40, 4.4], [50, 6.0]];
 const xpForLevel = l => {
   let mult = 1; for (const [from, m] of XP_BRACKETS) if (l >= from) mult = m;
   return Math.floor((4 + l * 2.8 + Math.pow(l, 1.6) * 0.55) * mult);
@@ -409,12 +458,16 @@ function nearestEnemies(s, x, y, maxR, n) {
 }
 
 /* 플레이어 공격 적중 공통 처리 (처형 진화 적용) */
+function healPlayer(p, amt) { p.hp = Math.min(p.maxHp, p.hp + amt * (p.stats.healMult || 1)); }
+
 function playerHit(s, p, e, dmg, kx, ky, kb) {
+  let style = '';
+  if (p.stats.crit && rnd(s) < p.stats.crit) { dmg *= p.stats.critMult || 2; style = 'crit'; }
   if (p.stats.evo.execute && e.hp <= e.maxHp * EVO.executeAt) {
     if (e.boss) dmg *= EVO.executeBossMult;
     else { dmg = Math.max(dmg, e.hp); emit(s, { t: 'execute', x: e.x, y: e.y }); }
   }
-  damageEnemy(s, e, dmg, p.id, kx, ky, kb);
+  damageEnemy(s, e, dmg, p.id, kx, ky, kb, style);
 }
 
 /* 근접 공격: 부채꼴(또는 360°) 범위 베기. 레벨당 무기 숙련 (CONFIG.MASTERY_PER_LEVEL) */
@@ -451,7 +504,8 @@ function quakeAt(s, p, x, y, dmg) {
   emit(s, { t: 'quake', x, y, r: qr });
 }
 
-function updateMelee(s, p, dt) {
+/* inp.aim: 조준 방향(월드). 있으면 그 방향으로, 없으면 가장 가까운 적 방향으로 벰 */
+function updateMelee(s, p, dt, inp) {
   const W = WEAPONS[p.weaponKey], st = p.stats, a = p.atk, evo = st.evo;
   a.swingT = Math.max(0, a.swingT - dt); a.spinT = Math.max(0, (a.spinT || 0) - dt);
   const R = W.base.range * st.range;
@@ -473,7 +527,7 @@ function updateMelee(s, p, dt) {
   if (a.spinLeft > 0) {
     a.spinLeft -= dt; a.rotT -= dt;
     if (a.rotT <= 0) {
-      a.rotT += EVO.whirlRot;
+      a.rotT += st.whirlRot;
       meleeSwing(s, p, a.angle, { R, arc, dmg: dmg * EVO.whirlDmg, kb: W.base.kb * 0.5, spin: true });
       a.angle += Math.PI * 0.6;
     }
@@ -483,7 +537,8 @@ function updateMelee(s, p, dt) {
   if (a.t > 0) return;
   const tgt = nearestEnemies(s, p.x, p.y, R * (1 + (W.base.fwd || 0)) + 40, 1)[0];
   if (!tgt) { a.t = 0.05; return; }
-  const ang = Math.atan2(tgt.y - p.y, tgt.x - p.x);
+  const aim = inp && inp.aim && (inp.aim.x || inp.aim.y) ? inp.aim : null;
+  const ang = aim ? Math.atan2(aim.y, aim.x) : Math.atan2(tgt.y - p.y, tgt.x - p.x);
   a.angle = ang; a.count++; p.ax = Math.cos(ang); p.ay = Math.sin(ang);
 
   if (evo.whirl) {
@@ -511,7 +566,7 @@ function spawnEnemy(s, type, x, y, opts = {}) {
   const elite = !!opts.elite;
   const e = {
     id: newId(s), type, x, y, r: T.r * (elite ? 1.4 : 1),
-    hp: T.hp * hpScale * CONFIG.ENEMY_HP_MULT * (elite ? 7 : 1), maxHp: 0,
+    hp: T.hp * hpScale * CONFIG.ENEMY_HP_MULT * (T.boss ? CONFIG.BOSS_HP_MULT : 1) * (elite ? 7 : 1), maxHp: 0,
     speed: T.speed * (1 + m * 0.012) * (elite ? 0.9 : 1),
     dmg: T.dmg * (1 + m * 0.05) * (elite ? 1.5 : 1),
     xp: T.xp * (elite ? 10 : 1), elite, boss: !!T.boss,
@@ -532,14 +587,14 @@ function dropGem(s, x, y, v) {
   s.gems.push({ id: newId(s), x: x + rndRange(s, -4, 4), y: y + rndRange(s, -4, 4), v, mag: false, sp: 0 });
 }
 
-function damageEnemy(s, e, dmg, ownerId, kx, ky, kb) {
+function damageEnemy(s, e, dmg, ownerId, kx, ky, kb, style) {
   if (e.dead) return;
   e.hp -= dmg; e.flash = 0.08;
   if (!e.boss) {
     const l = Math.hypot(kx, ky) || 1, f = kb * (e.type === 'husk' || e.elite ? 0.35 : 1);
     e.kbx += (kx / l) * f; e.kby += (ky / l) * f;
   }
-  emit(s, { t: 'dmg', x: e.x, y: e.y - e.r, v: dmg });
+  emit(s, { t: 'dmg', x: e.x, y: e.y - e.r, v: dmg, k: style });
   if (e.hp <= 0) killEnemy(s, e, ownerId);
 }
 
@@ -547,7 +602,7 @@ function killEnemy(s, e, ownerId) {
   if (e.dead) return;
   e.dead = true;
   const owner = s.players[ownerId];
-  if (owner) { owner.kills++; if (owner.alive && owner.stats.killHeal) owner.hp = Math.min(owner.maxHp, owner.hp + owner.stats.killHeal); }
+  if (owner) { owner.kills++; if (owner.alive && owner.stats.killHeal) healPlayer(owner, owner.stats.killHeal); }
   dropGem(s, e.x, e.y, e.xp);
   if (e.boss) spawnItem(s, 'evochest', e.x, e.y);
   else if (e.elite) spawnItem(s, pickWeighted(s, [['coin', 40], ['heart', 35], ['magnet', 25]]), e.x, e.y);
@@ -561,7 +616,8 @@ function killEnemy(s, e, ownerId) {
 }
 
 function hurtPlayer(s, p, dmg) {
-  if (p.invuln > 0 || !p.alive) return;
+  if (p.invuln > 0 || !p.alive || p.god) return;
+  if (p.stats.dodge && rnd(s) < p.stats.dodge) { p.invuln = 0.3; emit(s, { t: 'text', x: p.x, y: p.y, text: '회피', c: '#9be7c4' }); return; }
   const d = Math.max(1, dmg - p.stats.armor);
   p.hp -= d; p.invuln = 0.45;
   emit(s, { t: 'hurt', pid: p.id, v: d });
@@ -579,7 +635,11 @@ function gainXp(s, p, v) {
 
 function rollChoices(s, p, n, allowEvo = true) {
   const W = WEAPONS[p.weaponKey], pool = [];
-  if (allowEvo && p.evoOffer) return Object.keys(W.evolutions).filter(k => !p.evos.includes(k)).map(k => ({ kind: 'evo', key: k }));
+  if (allowEvo && p.evoOffer) {
+    const keys = Object.keys(W.evolutions), left = keys.filter(k => !p.evos.includes(k));
+    if (left.length) return left.map(k => ({ kind: 'evo', key: k }));
+    return keys.filter(k => !(p.evoUps || []).includes(k)).map(k => ({ kind: 'evoUp', key: k }));
+  }
   for (const k in W.nodes) { const lv = p.build[k] || 0; if (lv < W.nodes[k].max) pool.push({ kind: 'node', key: k, lv: lv + 1, w: lv ? 1.2 : 1 }); }
   const out = [];
   while (out.length < n && pool.length) {
@@ -599,6 +659,11 @@ function applyChoice(s, p, c) {
     emit(s, { t: 'banner', text: '진화 · ' + WEAPONS[p.weaponKey].evolutions[c.key].name, c: WEAPONS[p.weaponKey].evolutions[c.key].color });
     return;
   }
+  if (c.kind === 'evoUp') {
+    (p.evoUps || (p.evoUps = [])).push(c.key); p.evoOffer = false; recalcStats(p);
+    emit(s, { t: 'banner', text: '진화 강화 · ' + WEAPONS[p.weaponKey].evolutions[c.key].name, c: WEAPONS[p.weaponKey].evolutions[c.key].color });
+    return;
+  }
   if (c.kind === 'node') { p.build[c.key] = (p.build[c.key] || 0) + 1; recalcStats(p); }
   else if (c.kind === 'heal') p.hp = p.maxHp;
   else if (c.kind === 'gold') p.gold += 30;
@@ -607,7 +672,7 @@ function applyChoice(s, p, c) {
 function pickupItem(s, p, it) {
   it.dead = true;
   switch (it.kind) {
-    case 'heart': p.hp = Math.min(p.maxHp, p.hp + 30); emit(s, { t: 'text', x: it.x, y: it.y, text: '체력 +30', c: '#ff7f8f' }); break;
+    case 'heart': healPlayer(p, 30); emit(s, { t: 'text', x: it.x, y: it.y, text: `체력 +${Math.round(30 * (p.stats.healMult || 1))}`, c: '#ff7f8f' }); break;
     case 'coin': p.gold += 5; emit(s, { t: 'text', x: it.x, y: it.y, text: '금화 +5', c: '#ffd27a' }); break;
     case 'magnet': for (const g of s.gems) g.mag = true; emit(s, { t: 'text', x: it.x, y: it.y, text: '자석!', c: '#7fb2ff' }); break;
     case 'bomb': {
@@ -619,13 +684,14 @@ function pickupItem(s, p, it) {
       }
       break;
     }
-    case 'evochest': {  // 보스 상자: 남은 진화가 있으면 진화 선택창, 없으면 일반 보물상자 보상
-      const left = Object.keys(WEAPONS[p.weaponKey].evolutions).filter(k => !p.evos.includes(k));
+    case 'evochest': {  // 보스 상자: 첫 상자 = 진화, 다음 상자 = 진화 강화, 그 뒤는 일반 보상
+      const ev = WEAPONS[p.weaponKey].evolutions, ups = p.evoUps || [];
+      const left = Object.keys(ev).filter(k => !p.evos.includes(k) || !ups.includes(k));
       p.gold += 30; p.chests++;
       if (left.length) {
         p.evoOffer = true; p.pendingLevels++;
         if (!p.choices) { p.choices = rollChoices(s, p, 3); p.choiceSeq++; }
-        emit(s, { t: 'text', x: it.x, y: it.y, text: '진화의 상자!', c: '#d6b8ff' });
+        emit(s, { t: 'text', x: it.x, y: it.y, text: p.evos.length ? '진화 강화의 상자!' : '진화의 상자!', c: '#d6b8ff' });
       } else {
         const c = rollChoices(s, p, 1, false)[0]; applyChoice(s, p, c);
         emit(s, { t: 'chest', pid: p.id, x: it.x, y: it.y, label: choiceLabel(c, p).title });
@@ -643,7 +709,7 @@ function pickupItem(s, p, it) {
 
 function updateSpawning(s, players, dt) {
   const m = s.time / 60;
-  const rate = 0.7 + m * 0.75 + m * m * 0.02 + (s.time >= CONFIG.DURATION - 60 ? 8 : 0);  // 마지막 1분 러시
+  const rate = (0.7 + m * 0.75 + m * m * 0.02 + (s.time >= CONFIG.DURATION - 60 ? 8 : 0)) * CONFIG.SPAWN_MULT;  // 마지막 1분 러시
   const weights = [
     ['moth', Math.max(1.5, 10 - m * 0.45)],
     ['shade', m < 1 ? 1 : 3 + m * 0.5],
@@ -700,7 +766,7 @@ function updateEnemies(s, players, dt) {
       e.x = tp.x + Math.cos(a) * CONFIG.SPAWN_RADIUS; e.y = tp.y + Math.sin(a) * CONFIG.SPAWN_RADIUS;
       continue;
     }
-    const sp = e.speed * (e.slowT > 0 ? 0.6 : 1);
+    const sp = e.speed * CONFIG.ENEMY_SPEED_MULT * (e.slowT > 0 ? 0.6 : 1);
     const inv = 1 / (dist || 1);
     e.x += ((tp.x - e.x) * inv * sp + e.kbx) * dt;
     e.y += ((tp.y - e.y) * inv * sp + e.kby) * dt;
@@ -725,7 +791,7 @@ function updateEnemies(s, players, dt) {
   for (const p of players) {
     forEachNear(p.x, p.y, p.r + 50, e => {
       const rr = p.r + e.r * 0.85;
-      if ((e.x - p.x) ** 2 + (e.y - p.y) ** 2 < rr * rr) hurtPlayer(s, p, e.dmg);
+      if ((e.x - p.x) ** 2 + (e.y - p.y) ** 2 < rr * rr) hurtPlayer(s, p, e.dmg * CONFIG.ENEMY_DMG_MULT);
     });
   }
 }
@@ -813,8 +879,27 @@ function update(s, inputs, dt) {
   processActions(s);
   if (CONFIG.PAUSE_ON_LEVELUP) { for (const id in s.players) if (s.players[id].alive && s.players[id].choices) return; }
 
-  s.time += dt; s.tick++;
-  if (s.time >= CONFIG.DURATION) { s.time = CONFIG.DURATION; s.phase = 'victory'; emit(s, { t: 'end', result: 'victory' }); return; }
+  s.tick++;
+  if (!s.final) {
+    s.time += dt;
+    if (s.time >= CONFIG.DURATION) {  // 타이머 정지 → 잡몹 전부 제거 → 잠시 후 최후의 수문장
+      s.time = CONFIG.DURATION; s.final = { t: CONFIG.FINAL_BOSS_DELAY, spawned: false };
+      for (const e of s.enemies) if (!e.boss) { e.dead = true; emit(s, { t: 'kill', x: e.x, y: e.y, c: ENEMY_TYPES[e.type].color }); }
+      s.enemies = s.enemies.filter(e => !e.dead);
+      emit(s, { t: 'banner', text: '어둠이 걷힙니다…', c: '#dbe9e3' });
+    }
+  } else if (!s.final.spawned) {
+    s.final.t -= dt;
+    if (s.final.t <= 0) {
+      const ps = alivePlayers(s), p = ps[0];
+      if (p) {
+        const a = Math.atan2(p.fy, p.fx), e = spawnEnemy(s, 'boss', p.x + Math.cos(a) * 300, p.y + Math.sin(a) * 300);
+        e.final = true; e.r *= 1.2;
+        s.final.spawned = true;
+        emit(s, { t: 'banner', text: '최후의 수문장', c: '#ff5d6e' });
+      }
+    }
+  }
 
   const players = alivePlayers(s);
   for (const p of players) {
@@ -826,23 +911,28 @@ function update(s, inputs, dt) {
     p.moving = m > 0.08;
     if (p.moving) { const l = Math.hypot(mx, my); p.fx = mx / l; p.fy = my / l; }
     p.invuln = Math.max(0, p.invuln - dt);
-    if (p.stats.regen > 0) p.hp = Math.min(p.maxHp, p.hp + p.stats.regen * dt);
+    if (p.stats.regen > 0) healPlayer(p, p.stats.regen * dt);
   }
 
-  updateSpawning(s, players, dt);
+  if (!s.final) updateSpawning(s, players, dt);
   updateEnemies(s, players, dt);
-  for (const p of players) if (p.alive) updateMelee(s, p, dt);
+  for (const p of players) if (p.alive) updateMelee(s, p, dt, inputs[p.id]);
   updateProjectiles(s, dt);
   s.enemies = s.enemies.filter(e => !e.dead);
   updatePickups(s, players.filter(p => p.alive), dt);
 
   if (!alivePlayers(s).length) { s.phase = 'defeat'; emit(s, { t: 'end', result: 'defeat' }); }
+  else if (s.final && s.final.spawned && !s.enemies.some(e => e.final)) { s.phase = 'victory'; emit(s, { t: 'end', result: 'victory' }); }
 }
 
 function choiceLabel(c, p) {
   if (c.kind === 'evo') {
     const E = WEAPONS[p.weaponKey].evolutions[c.key];
-    return { title: '진화 · ' + E.name, name: E.name, glyph: E.glyph, color: E.color, tag: p.evos.length ? '마지막 진화' : '진화 · 다음 보스 상자에서 나머지를 받아요', desc: E.desc };
+    return { title: '진화 · ' + E.name, name: E.name, glyph: E.glyph, color: E.color, tag: '진화 · 다음 보스 상자에서 강화돼요', desc: E.desc };
+  }
+  if (c.kind === 'evoUp') {
+    const E = WEAPONS[p.weaponKey].evolutions[c.key];
+    return { title: '진화 강화 · ' + E.name, name: E.name + ' 강화', glyph: E.glyph, color: E.color, tag: '진화 강화', desc: E.upDesc };
   }
   if (c.kind === 'node') {
     const N = WEAPONS[p.weaponKey].nodes[c.key], desc = typeof N.desc === 'function' ? N.desc(c.lv) : Array.isArray(N.desc) ? N.desc[c.lv] : N.desc;
@@ -1075,7 +1165,7 @@ function createRenderer(canvas) {
   function consume(events, s, localId) {
     for (const ev of events) {
       switch (ev.t) {
-        case 'dmg': if (v.texts.length < 60) v.texts.push({ x: ev.x, y: ev.y, text: String(Math.round(ev.v)), c: '#f4efe4', life: 0.6, max: 0.6, pix: true, rise: 10, jx: Math.round((Math.random() - 0.5) * 6) }); break;
+        case 'dmg': if (v.texts.length < 60) v.texts.push({ x: ev.x, y: ev.y, text: String(Math.round(ev.v)), c: ev.k === 'crit' ? '#ffd27a' : '#f4efe4', life: 0.6, max: 0.6, pix: true, rise: 10, jx: Math.round((Math.random() - 0.5) * 6) }); break;
         case 'kill': {
           const n = ev.big ? 36 : 5;
           for (let i = 0; i < n && v.particles.length < 450; i++) {
@@ -1180,7 +1270,7 @@ function createRenderer(canvas) {
     const swinging = p.atk && p.atk.swingT > 0;
     const spinning = p.atk && p.atk.spinT > 0;
     // 회전 베기 중에는 이동·시선과 상관없이 몸이 빙글빙글 돎 (한 바퀴 = EVO.whirlRot초)
-    const th = spinning ? (t * Math.PI * 2) / EVO.whirlRot : 0;
+    const th = spinning ? (t * Math.PI * 2) / (p.stats.whirlRot || EVO.whirlRot) : 0;
     const fx = spinning ? Math.cos(th) : swinging ? p.ax : p.fx, fy = spinning ? Math.sin(th) : swinging ? p.ay : p.fy;
     const sfx = fx - fy, sfy = fx + fy;
     const set = sfy < -0.35 ? SPR.player.back : SPR.player.front;
@@ -1241,6 +1331,7 @@ function createRenderer(canvas) {
     ctx.font = `700 30px ${FONT_PIX}`;
     ctx.fillStyle = '#0a1012'; ctx.fillText(fmtTime(s.time), W / 2 + 3, top + 23);
     ctx.fillStyle = remain < 60 ? '#ffb547' : '#dbe9e3'; ctx.fillText(fmtTime(s.time), W / 2, top + 20);
+    if (s.final) { ctx.fillStyle = '#ff9aa6'; ctx.font = `700 13px ${FONT_UI}`; ctx.fillText(s.final.spawned ? '최후의 수문장을 쓰러뜨리세요' : '어둠이 걷힙니다…', W / 2, top + 58); }
     // 처치 / 금화
     ctx.textAlign = 'right'; ctx.font = `700 14px ${FONT_PIX}`;
     ctx.fillStyle = '#dbe9e3'; ctx.font = `700 14px ${FONT_UI}`; ctx.fillText(`처치 ${me.kills.toLocaleString()}`, R - 60, top + 22);
@@ -1249,7 +1340,7 @@ function createRenderer(canvas) {
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     let cx = Lx; const cy = H - v.safe.b - 30;
     const WP = WEAPONS[me.weaponKey];
-    const chips = [[WP, ''], ...me.evos.map(k => [WP.evolutions[k], 'EV']), ...Object.entries(me.build).map(([k, lv]) => [WP.nodes[k], lv])];
+    const chips = [[WP, ''], ...me.evos.filter(k => WP.evolutions[k]).map(k => [WP.evolutions[k], (me.evoUps || []).includes(k) ? 'EV+' : 'EV']), ...Object.entries(me.build).map(([k, lv]) => [WP.nodes[k], lv])];
     for (const [D, lv] of chips) {
       if (cx > W - 120) break;
       box(cx, cy - 13, 48, 26, 'rgba(19, 35, 42, 0.92)');
@@ -1259,13 +1350,13 @@ function createRenderer(canvas) {
       cx += 56;
     }
     // 보스 체력
-    const boss = s.enemies.find(e => e.boss);
+    const boss = s.enemies.find(e => e.final) || s.enemies.find(e => e.boss);
     if (boss) {
       const w = Math.min(420, W - 64), x = (W - w) / 2, y = H - v.safe.b - 78;
       box(x, y, w, 10, '#1a2a2e');
       ctx.fillStyle = '#ef5a6f'; ctx.fillRect(x, y, Math.max(2, Math.round(w * boss.hp / boss.maxHp)), 10);
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#ff9aa6'; ctx.font = `700 13px ${FONT_UI}`;
-      ctx.fillText(ENEMY_TYPES.boss.name, W / 2, y - 6);
+      ctx.fillText(boss.final ? '최후의 수문장' : ENEMY_TYPES.boss.name, W / 2, y - 6);
     }
     // 배너
     if (v.banner) {
@@ -1488,7 +1579,8 @@ function createRenderer(canvas) {
     }
   }
 
-  return { view: v, resize, consume, render, snapCamera, screenToWorldDir };
+  const worldToScreen = (x, y) => ({ x: SX(x, y) * v.px, y: SY(x, y) * v.px });
+  return { view: v, resize, consume, render, snapCamera, screenToWorldDir, worldToScreen };
 }
 
 /* ---------------- 5. INPUT (local only) ---------------- */
@@ -1545,6 +1637,7 @@ function startGame(weaponKey = lastWeapon) {
   lastWeapon = weaponKey;
   state = createState();
   addPlayer(state, localId, { name: '파수꾼', hue: 192, weapon: weaponKey });
+  if (Dev.on) buildDevPanel();
   renderer.snapCamera(state.players[localId]);
   Input.reset(); shownChoiceSeq = -1;
   screen = 'playing'; showOnly(null);
@@ -1566,9 +1659,9 @@ function levelOpen() { const p = state && state.players[localId]; return !!(p &&
 function renderChoices(p) {
   const cards = $('cards');
   cards.innerHTML = '';
-  const isEvo = p.choices[0] && p.choices[0].kind === 'evo';
-  $('lvEyebrow').textContent = (isEvo ? '보스 상자 · 진화' : `레벨 ${p.level}`) + (p.pendingLevels > 1 ? ` · 남은 선택 ${p.pendingLevels}` : '');
-  $('lvTitle').textContent = !isEvo ? '강화를 하나 고르세요' : p.evos.length ? '마지막 진화를 받으세요' : '진화를 하나 고르세요';
+  const kind = p.choices[0] && p.choices[0].kind;
+  $('lvEyebrow').textContent = (kind === 'evo' ? '보스 상자 · 진화' : kind === 'evoUp' ? '보스 상자 · 진화 강화' : `레벨 ${p.level}`) + (p.pendingLevels > 1 ? ` · 남은 선택 ${p.pendingLevels}` : '');
+  $('lvTitle').textContent = kind === 'evo' ? (p.choices.length > 1 ? '진화를 하나 고르세요' : '진화를 받으세요') : kind === 'evoUp' ? '진화를 강화하세요' : '강화를 하나 고르세요';
   cards.style.setProperty('--n', p.choices.length);
   p.choices.forEach((c, i) => {
     const L = choiceLabel(c, p);
@@ -1587,7 +1680,7 @@ function endGame() {
   const p = state.players[localId], win = state.phase === 'victory';
   $('endEyebrow').textContent = win ? '생존 성공' : '쓰러짐';
   $('endTitle').textContent = win ? '새벽이 밝았습니다' : '등불이 꺼졌습니다';
-  $('endText').textContent = win ? '15분 57초 동안 어둠을 버텨냈습니다. 숲에 아침이 찾아옵니다.' : `${fmtTime(state.time)} 동안 버텼습니다. 다시 등불을 밝혀 보세요.`;
+  $('endText').textContent = win ? '최후의 수문장을 쓰러뜨렸습니다. 숲에 아침이 찾아옵니다.' : `${fmtTime(state.time)} 동안 버텼습니다. 다시 등불을 밝혀 보세요.`;
   $('endStats').innerHTML = statHtml([['생존 시간', fmtTime(state.time)], ['레벨', p.level], ['처치', p.kills.toLocaleString()], ['금화', p.gold], ['보물상자', p.chests]]);
   const b = loadBest();
   if (!b || state.time > b.time || (state.time === b.time && p.kills > b.kills)) saveBest({ time: Math.floor(state.time), level: p.level, kills: p.kills });
@@ -1609,17 +1702,18 @@ let last = performance.now(), acc = 0;
 function frame(now) {
   const dt = Math.max(0, Math.min(0.1, (now - last) / 1000)); last = now;
   if (state && screen === 'playing') {
-    acc += dt; let steps = 0;
-    while (acc >= CONFIG.TICK && steps < 6) {
-      inputs[localId] = renderer.screenToWorldDir(Input.vector()); // 화면 방향 → 월드 방향
+    acc += dt * Dev.speed; let steps = 0; const maxSteps = Math.ceil(6 * Dev.speed);
+    while (acc >= CONFIG.TICK && steps < maxSteps) {
+      const mv = renderer.screenToWorldDir(Input.vector()); // 화면 방향 → 월드 방향
+      inputs[localId] = { x: mv.x, y: mv.y, aim: aimVector() };
       update(state, inputs, CONFIG.TICK);
       acc -= CONFIG.TICK; steps++;
     }
-    if (steps >= 6) acc = 0;
+    if (steps >= maxSteps) acc = 0;
   }
   if (state) {
     renderer.consume(state.events, state, localId); state.events.length = 0;
-    renderer.render(state, localId, screen === 'playing' ? dt : 0, Input.joy);
+    renderer.render(state, localId, screen === 'playing' ? dt * Dev.speed : 0, Input.joy);
   } else {
     renderStartBackdrop(dt);
   }
@@ -1637,8 +1731,23 @@ function renderStartBackdrop(dt) {
 }
 
 /* 입력 바인딩 */
+/* PC(마우스): 마우스 방향 조준 / 모바일(터치): 가까운 적 자동 조준. 마지막으로 쓴 입력 장치를 따름 */
+Input.mouse = { x: 0, y: 0, has: false };
+Input.aimMode = !!(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches);
+function setAimMode(on) { Input.aimMode = on; canvas.style.cursor = on ? 'crosshair' : ''; }
+setAimMode(Input.aimMode);
+window.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') { Input.mouse.x = e.clientX; Input.mouse.y = e.clientY; Input.mouse.has = true; if (!Input.aimMode) setAimMode(true); } });
+window.addEventListener('pointerdown', e => { if (e.pointerType === 'touch' && Input.aimMode) setAimMode(false); }, true);
+function aimVector() {
+  const me = state && state.players[localId];
+  if (!Input.aimMode || !Input.mouse.has || !me) return null;
+  const sp = renderer.worldToScreen(me.x, me.y);
+  const d = renderer.screenToWorldDir({ x: Input.mouse.x - sp.x, y: Input.mouse.y - (sp.y - 8 * renderer.view.px) });
+  const l = Math.hypot(d.x, d.y); return l ? { x: d.x / l, y: d.y / l } : null;
+}
 canvas.addEventListener('pointerdown', e => {
   if (screen !== 'playing' || levelOpen() || Input.joy.active) return;
+  if (e.pointerType === 'mouse') return;  // PC는 키보드 이동 + 마우스 조준
   e.preventDefault();
   const j = Input.joy; j.active = true; j.id = e.pointerId; j.ox = e.clientX; j.oy = e.clientY; j.dx = j.dy = 0;
   try { canvas.setPointerCapture(e.pointerId); } catch {}
@@ -1657,7 +1766,9 @@ canvas.addEventListener('pointerup', endJoy);
 canvas.addEventListener('pointercancel', endJoy);
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 
+const isTyping = e => e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
 window.addEventListener('keydown', e => {
+  if (isTyping(e)) return;
   const k = e.key.toLowerCase();
   if (screen === 'playing' && levelOpen() && ['1', '2', '3'].includes(k)) {
     const btn = $('choice-' + (Number(k) - 1)); if (btn && !btn.disabled) btn.click(); return;
@@ -1690,10 +1801,146 @@ $('pauseBtn').addEventListener('click', pauseGame);
 $('btnResume').addEventListener('click', resumeGame);
 $('btnQuit').addEventListener('click', () => { state = null; screen = 'start'; refreshBest(); showOnly('start'); });
 
+/* ---------------- 7. 개발자 모드 ----------------
+   이스터에그: 게임 화면에서 gmop 입력 (한/영 상관없음) · 태블릿: 일시정지 화면의 '일시정지' 글자 5번 탭
+   바꾼 값은 새로고침하면 기본값으로 돌아갑니다. '값 복사'로 저장해 두세요. */
+const Dev = { on: false, speed: 1, open: new Set(['게임', '무기']) };
+const devSnapshot = () => JSON.parse(JSON.stringify({ CONFIG, EVO, XP_BRACKETS, WEAPON_BASE: Object.fromEntries(Object.keys(WEAPONS).map(k => [k, WEAPONS[k].base])) }));
+const DEV_DEFAULTS = devSnapshot();
+function devRecalc() { if (!state) return; for (const id in state.players) { const p = state.players[id]; recalcStats(p); p.hp = Math.min(p.hp, p.maxHp); } }
+function devRestore(d) {
+  Object.assign(CONFIG, JSON.parse(JSON.stringify(d.CONFIG))); Object.assign(EVO, d.EVO);
+  XP_BRACKETS.splice(0, XP_BRACKETS.length, ...d.XP_BRACKETS.map(b => b.slice()));
+  for (const k in d.WEAPON_BASE) Object.assign(WEAPONS[k].base, d.WEAPON_BASE[k]);
+  Dev.speed = 1; devRecalc();
+}
+function devRows() {
+  const me = state && state.players[localId], wk = me ? me.weaponKey : lastWeapon, B = WEAPONS[wk].base, P = CONFIG.PLAYER;
+  const r = (label, get, set, min, max, step) => ({ label, get, set, min, max, step });
+  const evoRows = wk === 'sword' ? [
+    r('각성 이속 %', () => EVO.awakenSpeed * 100, v => { EVO.awakenSpeed = v / 100; devRecalc(); }, 0, 100, 1),
+    r('각성 회피 %', () => EVO.awakenDodge * 100, v => { EVO.awakenDodge = v / 100; devRecalc(); }, 0, 90, 1),
+    r('각성 재생/초', () => EVO.awakenRegen, v => { EVO.awakenRegen = v; devRecalc(); }, 0, 20, 0.1),
+    r('강화 회복 ×', () => EVO.awakenHealUp, v => { EVO.awakenHealUp = v; devRecalc(); }, 1, 5, 0.1),
+  ] : [
+    r('회오리 주기', () => EVO.whirlCd, v => { EVO.whirlCd = v; }, 0.3, 5, 0.05),
+    r('회전 시간', () => EVO.whirlTime, v => { EVO.whirlTime = v; }, 0.1, 3, 0.05),
+    r('타격 간격', () => EVO.whirlRot, v => { EVO.whirlRot = v; devRecalc(); }, 0.05, 1, 0.01),
+    r('강화 타격 간격', () => EVO.whirlRotUp, v => { EVO.whirlRotUp = v; devRecalc(); }, 0.05, 1, 0.01),
+    r('한 바퀴 피해 ×', () => EVO.whirlDmg, v => { EVO.whirlDmg = v; }, 0.05, 3, 0.05),
+  ];
+  return [
+    ['게임', [r('게임 속도 ×', () => Dev.speed, v => { Dev.speed = v; devBadge(); }, 0.25, 8, 0.25)]],
+    ['플레이어 기본', [
+      r('이동 속도', () => P.speed, v => { P.speed = v; devRecalc(); }, 60, 400, 5),
+      r('최대 체력', () => P.hp, v => { P.hp = v; devRecalc(); }, 10, 1000, 10),
+      r('획득 반경', () => P.magnet, v => { P.magnet = v; devRecalc(); }, 30, 400, 5),
+      r('레벨당 숙련 %', () => CONFIG.MASTERY_PER_LEVEL * 100, v => { CONFIG.MASTERY_PER_LEVEL = v / 100; }, 0, 10, 0.5),
+    ]],
+    ['무기', [
+      r('피해', () => B.dmg, v => { B.dmg = v; }, 1, 300, 1),
+      r('공격 간격(초)', () => B.cd, v => { B.cd = v; }, 0.1, 3, 0.01),
+      r('사거리', () => B.range, v => { B.range = v; }, 30, 250, 1),
+      r('베기 각도(°)', () => B.arc * 180 / Math.PI, v => { B.arc = v * Math.PI / 180; }, 20, 340, 5),
+      r('넉백', () => B.kb, v => { B.kb = v; }, 0, 2000, 10),
+      r('정면 사거리 +%', () => (B.fwd || 0) * 100, v => { B.fwd = v / 100; }, 0, 100, 5),
+    ], `${WEAPONS[wk].name} 기준 · 즉시 적용`],
+    ['진화', evoRows, `${WEAPONS[wk].name} 진화 · 즉시 적용`],
+    ['적', [
+      r('체력 배수', () => CONFIG.ENEMY_HP_MULT, v => { CONFIG.ENEMY_HP_MULT = v; }, 0.1, 10, 0.1),
+      r('보스 체력 배수', () => CONFIG.BOSS_HP_MULT, v => { CONFIG.BOSS_HP_MULT = v; }, 0.1, 5, 0.05),
+      r('공격력 배수', () => CONFIG.ENEMY_DMG_MULT, v => { CONFIG.ENEMY_DMG_MULT = v; }, 0, 5, 0.1),
+      r('이동 속도 배수', () => CONFIG.ENEMY_SPEED_MULT, v => { CONFIG.ENEMY_SPEED_MULT = v; }, 0.2, 3, 0.05),
+      r('등장량 배수', () => CONFIG.SPAWN_MULT, v => { CONFIG.SPAWN_MULT = v; }, 0, 5, 0.1),
+      r('최대 적 수', () => CONFIG.MAX_ENEMIES, v => { CONFIG.MAX_ENEMIES = v; }, 20, 600, 10),
+    ], '체력 배수는 새로 나오는 적부터 적용'],
+    ['경험치', XP_BRACKETS.map((b, i) => r(`Lv${b[0]}~ 배수`, () => XP_BRACKETS[i][1], v => { XP_BRACKETS[i][1] = v; }, 0.1, 12, 0.1)), '다음 레벨부터 적용'],
+    ['아이템', [r('필드 아이템 빈도', () => CONFIG.FIELD_ITEM_RATE, v => { CONFIG.FIELD_ITEM_RATE = Math.max(0.01, v); }, 0.05, 5, 0.05)]],
+  ];
+}
+function devActions() {
+  const me = () => state && state.players[localId];
+  const near = (k, d = 140) => { const p = me(); if (!p) return; const a = Math.random() * Math.PI * 2; return [p.x + Math.cos(a) * d, p.y + Math.sin(a) * d]; };
+  return [
+    ['무적', () => { const p = me(); if (p) p.god = !p.god; }, () => !!(me() && me().god)],
+    ['체력 가득', () => { const p = me(); if (p) p.hp = p.maxHp; }],
+    ['레벨 +1', () => { const p = me(); if (p) gainXp(state, p, p.xpNext - p.xp); }],
+    ['레벨 +5', () => { const p = me(); if (!p) return; for (let i = 0; i < 5; i++) gainXp(state, p, p.xpNext - p.xp); }],
+    ['시간 +1분', () => { if (state && !state.final) state.time = Math.min(CONFIG.DURATION - 0.1, state.time + 60); }],
+    ['최후의 보스로', () => { if (state && !state.final) state.time = CONFIG.DURATION - 0.05; }],
+    ['보스 소환', () => { const q = near(260); if (q) spawnEnemy(state, 'boss', ...q); }],
+    ['정예 소환', () => { const q = near(220); if (q) spawnEnemy(state, pickWeighted(state, [['shade', 1], ['husk', 1], ['sprinter', 1]]), ...q, { elite: true }); }],
+    ['잡몹 제거', () => { if (state) state.enemies = state.enemies.filter(e => e.boss); }],
+    ['진화 상자', () => { const q = near(40); if (q) spawnItem(state, 'evochest', ...q); }],
+    ['회복약', () => { const q = near(60); if (q) spawnItem(state, 'heart', ...q); }],
+    ['자석', () => { const q = near(60); if (q) spawnItem(state, 'magnet', ...q); }],
+    ['폭탄', () => { const q = near(60); if (q) spawnItem(state, 'bomb', ...q); }],
+  ];
+}
+function devBadge() { $('devBadge').textContent = `속도 ×${Dev.speed}`; }
+function buildDevPanel() {
+  const box = $('devActions'); box.innerHTML = '';
+  for (const [label, fn, isOn] of devActions()) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    const sync = () => { if (isOn) b.classList.toggle('on', isOn()); };
+    b.addEventListener('click', () => { if (!state) return; fn(); sync(); }); sync();
+    box.appendChild(b);
+  }
+  const body = $('devBody'); body.innerHTML = '';
+  for (const [title, rows, note] of devRows()) {
+    const det = document.createElement('details'); det.open = Dev.open.has(title);
+    det.addEventListener('toggle', () => { det.open ? Dev.open.add(title) : Dev.open.delete(title); });
+    const sum = document.createElement('summary'); sum.textContent = title; det.appendChild(sum);
+    if (note) { const n = document.createElement('div'); n.className = 'dev-note'; n.textContent = note; det.appendChild(n); }
+    for (const row of rows) {
+      const el = document.createElement('div'); el.className = 'dev-row';
+      const lab = document.createElement('span'); lab.textContent = row.label;
+      const rng = document.createElement('input'); rng.type = 'range';
+      const num = document.createElement('input'); num.type = 'number';
+      for (const i of [rng, num]) { i.min = row.min; i.max = row.max; i.step = row.step; }
+      const show = v => { const t = Math.round(v * 1000) / 1000; rng.value = t; num.value = t; };
+      show(row.get());
+      const apply = v => { v = Number(v); if (!Number.isFinite(v)) return; row.set(v); show(row.get()); };
+      rng.addEventListener('input', () => apply(rng.value));
+      num.addEventListener('change', () => apply(num.value));
+      el.append(lab, rng, num); det.appendChild(el);
+    }
+    body.appendChild(det);
+  }
+  devBadge();
+}
+function toggleDev(force) {
+  Dev.on = force ?? !Dev.on;
+  $('devPanel').hidden = !Dev.on;
+  if (Dev.on) buildDevPanel(); else Dev.speed = 1;
+}
+// gmop 입력 감지 (e.code 기준이라 한글 입력 상태에서도 동작). 마지막 p가 일시정지를 누르지 않도록 먼저 가로챔
+let devBuf = '';
+window.addEventListener('keydown', e => {
+  if (isTyping(e)) return;
+  const m = /^Key([A-Z])$/.exec(e.code); if (!m) return;
+  devBuf = (devBuf + m[1].toLowerCase()).slice(-4);
+  if (devBuf === 'gmop') { devBuf = ''; e.stopImmediatePropagation(); e.preventDefault(); toggleDev(); }
+}, true);
+// 태블릿: 일시정지 화면 제목을 2초 안에 5번 탭
+let devTaps = [];
+$('pauseEyebrow').addEventListener('click', () => {
+  const now = performance.now(); devTaps = devTaps.filter(t => now - t < 2000); devTaps.push(now);
+  if (devTaps.length >= 5) { devTaps = []; toggleDev(); }
+});
+$('devClose').addEventListener('click', () => toggleDev(false));
+$('devReset').addEventListener('click', () => { devRestore(DEV_DEFAULTS); buildDevPanel(); });
+$('devCopy').addEventListener('click', () => {
+  const txt = JSON.stringify(devSnapshot(), null, 1);
+  const out = $('devOut');
+  const fallback = () => { out.hidden = false; out.value = txt; out.focus(); out.select(); };
+  try { navigator.clipboard.writeText(txt).then(() => { $('devCopy').textContent = '복사됨'; setTimeout(() => { $('devCopy').textContent = '값 복사'; }, 1500); }, fallback); } catch { fallback(); }
+});
+
 function boot(data) {
   renderer.resize();
   refreshBest();
-  const compatible = data && data.state && Object.values(data.state.players || {}).every(p => p.weaponKey && Array.isArray(p.evos));
+  const compatible = data && data.state && Object.values(data.state.players || {}).every(p => p.weaponKey && Array.isArray(p.evos) && Array.isArray(p.evoUps));
   if (compatible && data.state.phase === 'playing') {
     state = data.state; state.events = []; localId = data.localId || 'p1';
     renderer.snapCamera(state.players[localId]);
