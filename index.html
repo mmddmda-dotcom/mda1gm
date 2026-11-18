@@ -1537,7 +1537,7 @@ function loadBest() { try { return JSON.parse(localStorage.getItem('lantern-ward
 function saveBest(rec) { try { localStorage.setItem('lantern-warden-best', JSON.stringify(rec)); } catch {} }
 function refreshBest() {
   const b = loadBest();
-  $('bestLine').textContent = b ? `최고 기록 · ${fmtTime(b.time)} 생존 · 레벨 ${b.level} · 처치 ${b.kills.toLocaleString()}` : '15분 57초를 버티면 새벽이 옵니다.';
+  $('bestLine').textContent = b ? `최고 기록 · ${fmtTime(b.time)} 생존 · 레벨 ${b.level} · 처치 ${b.kills.toLocaleString()}` : '15분을 버티면 새벽이 옵니다.';
 }
 
 let lastWeapon = 'sword';
