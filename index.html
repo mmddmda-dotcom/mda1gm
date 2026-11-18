@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0c1618">
-<meta name="description" content="20분 동안 밤의 숲에서 몰려오는 어둠을 버티는 쿼터뷰 도트 생존 액션 게임">
+<meta name="description" content="한손검·양손검으로 15분 57초를 버티며 보스 상자로 진화하는 쿼터뷰 도트 생존 액션 게임">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -130,7 +130,7 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 
 <div id="ovStart" class="overlay">
   <div class="panel">
-    <div class="eyebrow">밤의 숲 · 20분 생존</div>
+    <div class="eyebrow">밤의 숲 · 15분 57초 생존</div>
     <h1>등불 파수꾼</h1>
     <p>새벽이 올 때까지 등불을 지키세요. 사방에서 몰려오는 어둠을 물리치고, 떨어진 별조각을 모아 강해지세요.</p>
     <div class="rules">
@@ -195,7 +195,8 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 
 /* ---------------- 1. CONFIG / DATA ---------------- */
 const CONFIG = {
-  DURATION: 20 * 60,        // 20분
+  DURATION: 15 * 60 + 57,   // 15분 57초
+  FIELD_ITEM_RATE: 0.6,     // 맵에 자연 생성되는 아이템 빈도 배수 (3/5)
   TICK: 1 / 60,             // 고정 시뮬레이션 간격
   MAX_ENEMIES: 260,
   SPAWN_RADIUS: 820,
@@ -210,6 +211,20 @@ const CONFIG = {
 
 /* 시작 무기. 레벨업 때는 고른 무기의 빌드(nodes)만 올릴 수 있습니다.
    mod: 레벨 1당 더해지는 수치 (recalcStats에서 합산) */
+/* 시야 단계 (밝은 심지 0~5레벨). radius: 밝은 범위 배수, dark: 어둠 진하기 배수 (낮을수록 밝음) */
+const VISION = {
+  radius: [0.72, 0.82, 0.92, 1.0, 1.1, 1.2],
+  dark:   [1.0, 0.92, 0.84, 0.76, 0.68, 0.6],
+};
+
+/* 두 무기 공통 성장 항목 */
+const COMMON_NODES = {
+  study:  { name: '배움의 기쁨', glyph: '↑', color: '#6fe3c4', max: 5, desc: '경험치 획득량 +15%', mod: { xp: 0.15 } },
+  magnet: { name: '자철석',      glyph: '∪', color: '#7fb2ff', max: 5, desc: '별조각·아이템 획득 반경 +30%', mod: { magnet: 0.3 } },
+  vision: { name: '밝은 심지',   glyph: '◐', color: '#ffd27a', max: 5, mod: { vision: 1 },
+    desc: lv => `시야 범위 ${Math.round(VISION.radius[lv - 1] * 100)}% → ${Math.round(VISION.radius[lv] * 100)}% · 주변 어둠 ${Math.round((1 - VISION.dark[lv]) * 100)}% 옅어짐` },
+};
+
 const WEAPONS = {
   sword: {
     name: '한손검', glyph: '†', color: '#bfe8ff',
@@ -218,8 +233,8 @@ const WEAPONS = {
     base: { dmg: 16, cd: 0.42, range: 72, arc: 1.9, kb: 150 },
     spinTable: [0, 5, 4, 3],
     evolutions: {
-      combo: { name: '연속 베기', glyph: '≡', color: '#bfe8ff', desc: '모든 공격이 2회 연속으로 나갑니다. 대신 한 번의 피해량 -15%' },
-      wave:  { name: '검기',      glyph: '≫', color: '#86b8ff', desc: '벨 때마다 공격 범위만 한 검기를 앞으로 날립니다. 적을 관통하고, 관통할 때마다 피해 -30%' },
+      combo: { name: '연속 베기', glyph: '≡', color: '#bfe8ff', desc: '모든 공격이 2회 연속으로 나갑니다' },
+      wave:  { name: '검기',      glyph: '≫', color: '#86b8ff', desc: '벨 때마다 공격 범위만 한 검기를 앞으로 날립니다. 적을 관통하고, 관통할 때마다 피해 -40%' },
     },
     nodes: {
       edge:   { name: '날 세우기',   glyph: '◆', color: '#ffb547', max: 5, desc: '피해량 +20%', mod: { dmg: 0.2 } },
@@ -229,13 +244,14 @@ const WEAPONS = {
       shield: { name: '방패 막기',   glyph: '▣', color: '#a7c47a', max: 3, desc: '받는 피해 -2', mod: { armor: 2 } },
       feet:   { name: '날렵한 발',   glyph: '›', color: '#9be7c4', max: 3, desc: '이동 속도 +8%', mod: { speed: 0.08 } },
       vigor:  { name: '단련된 몸',   glyph: '+', color: '#ff7f8f', max: 3, desc: '최대 체력 +20 (즉시 회복)', mod: { hp: 20 } },
+      ...COMMON_NODES,
     },
   },
   greatsword: {
     name: '양손검', glyph: '‡', color: '#ffd27a',
     blurb: '느리지만 넓고 묵직한 일격. 충격파와 처형으로 성장합니다.',
     rating: [['공격력', 5], ['속도', 2], ['범위', 4]],
-    base: { dmg: 34, cd: 1.15, range: 90, arc: 2.9, kb: 320 },
+    base: { dmg: 34, cd: 1.15, range: 90, arc: 2.9, kb: 800, fwd: 0.3 },  // fwd: 정면 사거리 추가 비율
     spinTable: [0],
     evolutions: {
       whirl:   { name: '회오리', glyph: '◎', color: '#d6b8ff', desc: '기본 공격이 회전 베기로 바뀝니다. 1.5초마다 회전하고, 공격 속도가 오를수록 더 오래 돕니다' },
@@ -249,17 +265,17 @@ const WEAPONS = {
       blood:   { name: '투지',        glyph: '∴', color: '#ff7f8f', max: 3, desc: '적을 처치하면 체력 0.2 회복', mod: { killHeal: 0.2 } },
       skin:    { name: '강철 피부',   glyph: '▣', color: '#a7c47a', max: 4, desc: '최대 체력 +25 · 받는 피해 -1', mod: { hp: 25, armor: 1 } },
       stride:  { name: '전진',        glyph: '›', color: '#9be7c4', max: 3, desc: '이동 속도 +8%', mod: { speed: 0.08 } },
+      ...COMMON_NODES,
     },
   },
 };
 
 /* 진화 수치 (테스트 후 조정용) */
 const EVO = {
-  LEVELS: [30, 40],     // 30레벨: 하나 선택 / 40레벨: 나머지 자동 획득
-  comboDmg: 0.85,       // 연속 베기: 한 번의 피해 배수
+  comboDmg: 1.0,        // 연속 베기: 한 번의 피해 배수
   comboGap: 0.13,       // 연속 베기: 두 번째 베기까지 간격(초)
   waveDmg: 1.0,         // 검기: 첫 적중 피해 = 베기 피해 × 이 값
-  waveFalloff: 0.7,     // 검기: 관통할 때마다 피해 배수
+  waveFalloff: 0.6,     // 검기: 관통할 때마다 피해 배수 (0.6 = 40% 감소)
   waveDist: 340,        // 검기: 날아가는 거리
   waveSpeed: 460,
   whirlCd: 1.5,         // 회오리: 공격 주기(고정)
@@ -290,8 +306,8 @@ const ITEM_TYPES = {
 function createState(seed = (Math.random() * 2 ** 31) | 0) {
   return {
     seed, rng: seed | 0, time: 0, tick: 0, phase: 'playing', nextId: 1,
-    players: {}, enemies: [], projectiles: [], gems: [], items: [],
-    spawnAcc: 0, itemTimer: 10, waveTimer: 90, bossIndex: 0,
+    players: {}, enemies: [], projectiles: [], gems: [], items: [], waveHits: {},
+    spawnAcc: 0, itemTimer: 10 / CONFIG.FIELD_ITEM_RATE, waveTimer: 90, bossIndex: 0,
     actions: [],   // 플레이어 → 시뮬레이션 (예: 레벨업 선택)
     events: [],    // 시뮬레이션 → 렌더러 (이펙트 전용, 매 프레임 비움)
   };
@@ -305,7 +321,7 @@ function createPlayer(id, name, hue, weaponKey = 'sword') {
     kills: 0, gold: 0, chests: 0,
     weaponKey, build: {},  // build: { 노드키: 레벨 }
     evos: [], evoOffer: false,  // 진화: 얻은 목록 / 30레벨 선택 대기
-    atk: { t: 0.3, count: 0, pending: 0, qt: 0, angle: 0, mirror: false, swingT: 0, spinLeft: 0, rotT: 0 },
+    atk: { t: 0.3, count: 0, pending: 0, qt: 0, angle: 0, mirror: false, swingT: 0, spinLeft: 0, rotT: 0, spinT: 0 },
     stats: null,
   };
   recalcStats(p);
@@ -322,11 +338,11 @@ function addPlayer(s, id, opts = {}) {
 
 function recalcStats(p) {
   const W = WEAPONS[p.weaponKey];
-  const m = { dmg: 0, aspd: 0, range: 0, spin: 0, armor: 0, speed: 0, hp: 0, quake: 0, killHeal: 0 };
+  const m = { dmg: 0, aspd: 0, range: 0, spin: 0, armor: 0, speed: 0, hp: 0, quake: 0, killHeal: 0, xp: 0, magnet: 0, vision: 0 };
   for (const k in p.build) { const N = W.nodes[k]; for (const st in N.mod) m[st] += N.mod[st] * p.build[k]; }
   const oldMax = p.maxHp;
   p.stats = {
-    speed: 165 * (1 + m.speed), magnet: 110, armor: m.armor, regen: 0, killHeal: m.killHeal,
+    speed: 165 * (1 + m.speed), magnet: 110 * (1 + m.magnet), xpMult: 1 + m.xp, vision: Math.min(5, m.vision), armor: m.armor, regen: 0, killHeal: m.killHeal,
     dmg: 1 + m.dmg, aspd: 1 + m.aspd, range: 1 + m.range,
     spinEvery: W.spinTable[m.spin] || 0, quake: m.quake,
     evo: Object.fromEntries((p.evos || []).map(k => [k, true])),
@@ -335,7 +351,12 @@ function recalcStats(p) {
   if (p.maxHp > oldMax) p.hp += p.maxHp - oldMax;
 }
 
-const xpForLevel = l => Math.floor(4 + l * 2.8 + Math.pow(l, 1.6) * 0.55);
+/* 레벨업 경험치: 기본 곡선 × 구간 배수. [시작 레벨, 배수] — 해당 레벨부터 다음 구간 전까지 적용 */
+const XP_BRACKETS = [[1, 1], [30, 1.3], [40, 4.3], [50, 6.0]];
+const xpForLevel = l => {
+  let mult = 1; for (const [from, m] of XP_BRACKETS) if (l >= from) mult = m;
+  return Math.floor((4 + l * 2.8 + Math.pow(l, 1.6) * 0.55) * mult);
+};
 
 /* ---------------- 3. SIMULATION ---------------- */
 function rnd(s) {
@@ -398,26 +419,30 @@ function playerHit(s, p, e, dmg, kx, ky, kb) {
 
 /* 근접 공격: 부채꼴(또는 360°) 범위 베기. 레벨당 무기 숙련 (CONFIG.MASTERY_PER_LEVEL) */
 function meleeSwing(s, p, a, o) {
-  const arc = o.spin ? Math.PI * 2 : o.arc, R = o.spin ? o.R * 1.15 : o.R;
+  const arc = o.spin ? Math.PI * 2 : o.arc, R = o.spin ? o.R * 1.15 : o.R, fwd = o.spin ? 0 : (o.fwd || 0);
   const ca = Math.cos(a), sa = Math.sin(a);
-  forEachNear(p.x, p.y, R + 50, e => {
+  // 정면일수록 사거리가 길어지는 부채꼴 (fwd = 정면 추가 비율)
+  const reach = ang => R * (1 + fwd * Math.max(0, Math.cos(ang)) ** 2);
+  forEachNear(p.x, p.y, R * (1 + fwd) + 50, e => {
     const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
-    if (d > R + e.r) return;
+    if (d > R * (1 + fwd) + e.r) return;
+    let ang = 0;
     if (!o.spin && d > e.r) {
-      const ang = Math.acos(Math.max(-1, Math.min(1, (dx * ca + dy * sa) / d)));
+      ang = Math.acos(Math.max(-1, Math.min(1, (dx * ca + dy * sa) / d)));
       if (ang - Math.asin(Math.min(1, e.r / d)) > arc / 2) return;
     }
+    if (d > reach(ang) + e.r) return;
     playerHit(s, p, e, o.dmg, dx, dy, o.kb);
   });
-  emit(s, { t: 'slash', pid: p.id, a, arc, R, w: p.weaponKey, spin: !!o.spin, mirror: !!o.mirror });
+  emit(s, { t: 'slash', pid: p.id, a, arc, R, fwd, w: p.weaponKey, spin: !!o.spin, mirror: !!o.mirror });
 }
 
 /* 검기: 베기 폭(현)만 한 초승달이 앞으로 날아가며 관통. 관통마다 피해 감소 */
-function fireWave(s, p, a, R, arc, dmg) {
+function fireWave(s, p, a, R, arc, dmg, group) {
   const half = R * Math.sin(Math.min(arc, 2.6) / 2), sp = EVO.waveSpeed;
   s.projectiles.push({ id: newId(s), kind: 'wave', owner: p.id, x: p.x + Math.cos(a) * R * 0.45, y: p.y + Math.sin(a) * R * 0.45,
     vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: 12, halfLen: half, dmg: dmg * EVO.waveDmg, dmg0: dmg * EVO.waveDmg,
-    falloff: EVO.waveFalloff, pierce: 999, life: EVO.waveDist / sp, hits: [] });
+    falloff: EVO.waveFalloff, pierce: 999, life: EVO.waveDist / sp, hits: [], group });
 }
 
 function quakeAt(s, p, x, y, dmg) {
@@ -428,14 +453,15 @@ function quakeAt(s, p, x, y, dmg) {
 
 function updateMelee(s, p, dt) {
   const W = WEAPONS[p.weaponKey], st = p.stats, a = p.atk, evo = st.evo;
-  a.swingT = Math.max(0, a.swingT - dt);
+  a.swingT = Math.max(0, a.swingT - dt); a.spinT = Math.max(0, (a.spinT || 0) - dt);
   const R = W.base.range * st.range;
   const arc = Math.min(Math.PI * 1.9, W.base.arc * (1 + (st.range - 1) * 0.5));
   let dmg = W.base.dmg * st.dmg * (1 + CONFIG.MASTERY_PER_LEVEL * (p.level - 1));
   if (evo.combo) dmg *= EVO.comboDmg;
   const strike = (ang, spin, mirror) => {
-    meleeSwing(s, p, ang, { R, arc, dmg: spin ? dmg * 1.2 : dmg, kb: W.base.kb, spin, mirror });
-    if (evo.wave) fireWave(s, p, ang, R, arc, dmg);
+    if (spin) a.spinT = 0.24;
+    meleeSwing(s, p, ang, { R, arc, dmg: spin ? dmg * 1.2 : dmg, kb: W.base.kb, fwd: W.base.fwd, spin, mirror });
+    if (evo.wave) fireWave(s, p, ang, R, arc, dmg, a.waveGroup);
   };
 
   // 연속 베기: 두 번째 베기
@@ -455,18 +481,19 @@ function updateMelee(s, p, dt) {
 
   a.t -= evo.whirl ? dt : dt * st.aspd;  // 회오리는 주기 고정, 공격 속도는 회전 시간으로
   if (a.t > 0) return;
-  const tgt = nearestEnemies(s, p.x, p.y, R + 40, 1)[0];
+  const tgt = nearestEnemies(s, p.x, p.y, R * (1 + (W.base.fwd || 0)) + 40, 1)[0];
   if (!tgt) { a.t = 0.05; return; }
   const ang = Math.atan2(tgt.y - p.y, tgt.x - p.x);
   a.angle = ang; a.count++; p.ax = Math.cos(ang); p.ay = Math.sin(ang);
 
   if (evo.whirl) {
-    a.spinLeft = EVO.whirlTime * st.aspd; a.rotT = 0; a.swingT = a.spinLeft;
+    a.spinLeft = EVO.whirlTime * st.aspd; a.rotT = 0; a.swingT = a.spinLeft; a.spinT = a.spinLeft;
     if (st.quake) quakeAt(s, p, p.x, p.y, dmg);
     a.t = EVO.whirlCd;
     return;
   }
   a.swingT = 0.2;
+  a.waveGroup = newId(s);  // 한 번의 공격(연속 베기 포함)에서 나간 검기는 대상당 1회만 피해
   strike(ang, st.spinEvery > 0 && a.count % st.spinEvery === 0, false);
   if (evo.combo) { a.pending = 1; a.qt = EVO.comboGap; a.mirror = false; }
   if (st.quake) quakeAt(s, p, p.x + Math.cos(ang) * R * 0.75, p.y + Math.sin(ang) * R * 0.75, dmg);
@@ -496,7 +523,7 @@ function spawnEnemy(s, type, x, y, opts = {}) {
 }
 
 function spawnItem(s, kind, x, y) {
-  if (kind !== 'chest' && s.items.length >= CONFIG.MAX_ITEMS) return;
+  if (kind !== 'chest' && kind !== 'evochest' && s.items.length >= CONFIG.MAX_ITEMS) return;
   s.items.push({ id: newId(s), kind, x, y });
 }
 
@@ -522,7 +549,8 @@ function killEnemy(s, e, ownerId) {
   const owner = s.players[ownerId];
   if (owner) { owner.kills++; if (owner.alive && owner.stats.killHeal) owner.hp = Math.min(owner.maxHp, owner.hp + owner.stats.killHeal); }
   dropGem(s, e.x, e.y, e.xp);
-  if (e.boss || e.elite) spawnItem(s, 'chest', e.x, e.y);
+  if (e.boss) spawnItem(s, 'evochest', e.x, e.y);
+  else if (e.elite) spawnItem(s, pickWeighted(s, [['coin', 40], ['heart', 35], ['magnet', 25]]), e.x, e.y);
   else {
     const r = rnd(s);
     if (r < 0.012) spawnItem(s, 'coin', e.x, e.y);
@@ -545,8 +573,6 @@ function gainXp(s, p, v) {
   while (p.xp >= p.xpNext) {
     p.xp -= p.xpNext; p.level++; p.xpNext = xpForLevel(p.level); p.pendingLevels++;
     emit(s, { t: 'levelup', pid: p.id });
-    if (p.level === EVO.LEVELS[0] && !p.evos.length) p.evoOffer = true;
-    if (p.level === EVO.LEVELS[1] && p.evos.length < 2) p.evoOffer = true;
   }
   if (p.pendingLevels > 0 && !p.choices) { p.choices = rollChoices(s, p, 3); p.choiceSeq++; }
 }
@@ -571,8 +597,6 @@ function applyChoice(s, p, c) {
   if (c.kind === 'evo') {
     p.evos.push(c.key); p.evoOffer = false; recalcStats(p);
     emit(s, { t: 'banner', text: '진화 · ' + WEAPONS[p.weaponKey].evolutions[c.key].name, c: WEAPONS[p.weaponKey].evolutions[c.key].color });
-    // 30과 40을 한꺼번에 넘긴 경우: 다음 선택창에서 남은 진화를 바로 보여줌
-    if (p.level >= EVO.LEVELS[1] && p.evos.length < Object.keys(WEAPONS[p.weaponKey].evolutions).length) p.evoOffer = true;
     return;
   }
   if (c.kind === 'node') { p.build[c.key] = (p.build[c.key] || 0) + 1; recalcStats(p); }
@@ -595,6 +619,19 @@ function pickupItem(s, p, it) {
       }
       break;
     }
+    case 'evochest': {  // 보스 상자: 남은 진화가 있으면 진화 선택창, 없으면 일반 보물상자 보상
+      const left = Object.keys(WEAPONS[p.weaponKey].evolutions).filter(k => !p.evos.includes(k));
+      p.gold += 30; p.chests++;
+      if (left.length) {
+        p.evoOffer = true; p.pendingLevels++;
+        if (!p.choices) { p.choices = rollChoices(s, p, 3); p.choiceSeq++; }
+        emit(s, { t: 'text', x: it.x, y: it.y, text: '진화의 상자!', c: '#d6b8ff' });
+      } else {
+        const c = rollChoices(s, p, 1, false)[0]; applyChoice(s, p, c);
+        emit(s, { t: 'chest', pid: p.id, x: it.x, y: it.y, label: choiceLabel(c, p).title });
+      }
+      break;
+    }
     case 'chest': {
       const c = rollChoices(s, p, 1, false)[0];
       applyChoice(s, p, c); p.gold += 15; p.chests++;
@@ -606,7 +643,7 @@ function pickupItem(s, p, it) {
 
 function updateSpawning(s, players, dt) {
   const m = s.time / 60;
-  const rate = 0.7 + m * 0.75 + m * m * 0.02 + (m >= 19 ? 8 : 0);
+  const rate = 0.7 + m * 0.75 + m * m * 0.02 + (s.time >= CONFIG.DURATION - 60 ? 8 : 0);  // 마지막 1분 러시
   const weights = [
     ['moth', Math.max(1.5, 10 - m * 0.45)],
     ['shade', m < 1 ? 1 : 3 + m * 0.5],
@@ -641,7 +678,7 @@ function updateSpawning(s, players, dt) {
   // 맵 아이템
   s.itemTimer -= dt;
   if (s.itemTimer <= 0) {
-    s.itemTimer = rndRange(s, 14, 24);
+    s.itemTimer = rndRange(s, 14, 24) / CONFIG.FIELD_ITEM_RATE;
     const p = players[(rnd(s) * players.length) | 0];
     const kind = pickWeighted(s, Object.entries(ITEM_TYPES).map(([k, v]) => [k, v.weight]));
     const a = rnd(s) * Math.PI * 2, R = rndRange(s, 280, 700);
@@ -694,16 +731,18 @@ function updateEnemies(s, players, dt) {
 }
 
 function updateProjectiles(s, dt) {
+  if (!s.waveHits) s.waveHits = {};
   for (const pr of s.projectiles) {
     pr.x += pr.vx * dt; pr.y += pr.vy * dt; pr.life -= dt;
     if (pr.life <= 0) continue;
     if (pr.kind === 'wave') {
       const sp = Math.hypot(pr.vx, pr.vy) || 1, fx = pr.vx / sp, fy = pr.vy / sp;
       forEachNear(pr.x, pr.y, pr.halfLen + 44, e => {
-        if (pr.hits.includes(e.id)) return;
+        const hits = pr.group ? (s.waveHits[pr.group] || (s.waveHits[pr.group] = [])) : pr.hits;
+        if (hits.includes(e.id)) return;
         const dx = e.x - pr.x, dy = e.y - pr.y, along = dx * fx + dy * fy, lat = -dx * fy + dy * fx;
         if (Math.abs(along) < pr.r + e.r && Math.abs(lat) < pr.halfLen + e.r * 0.5) {
-          pr.hits.push(e.id);
+          hits.push(e.id);
           damageEnemy(s, e, pr.dmg, pr.owner, fx, fy, 120);
           pr.dmg *= pr.falloff;
         }
@@ -720,6 +759,7 @@ function updateProjectiles(s, dt) {
     });
   }
   s.projectiles = s.projectiles.filter(pr => pr.life > 0 && pr.pierce > 0);
+  for (const g in s.waveHits) if (!s.projectiles.some(pr => pr.group == g)) delete s.waveHits[g];
 }
 
 function updatePickups(s, players, dt) {
@@ -733,11 +773,19 @@ function updatePickups(s, players, dt) {
       g.sp = Math.min(950, Math.max(g.sp, 220) + 1100 * dt);
       const step = Math.min(d, g.sp * dt);
       g.x += ((tp.x - g.x) / (d || 1)) * step; g.y += ((tp.y - g.y) / (d || 1)) * step;
-      if (d < tp.r + 8) { g.dead = true; gainXp(s, tp, g.v); }
+      if (d < tp.r + 8) { g.dead = true; gainXp(s, tp, g.v * tp.stats.xpMult); }
     }
   }
   s.gems = s.gems.filter(g => !g.dead);
   for (const it of s.items) {
+    // 획득 반경 안의 아이템은 플레이어에게 끌려옴 (자철석 영향)
+    let tp = null, bd = Infinity;
+    for (const p of players) { const d = (p.x - it.x) ** 2 + (p.y - it.y) ** 2; if (d < bd) { bd = d; tp = p; } }
+    if (tp) {
+      const d = Math.sqrt(bd);
+      if (!it.mag && d < tp.stats.magnet * 0.6) it.mag = true;
+      if (it.mag && d > 1) { const step = Math.min(d, 420 * dt); it.x += ((tp.x - it.x) / d) * step; it.y += ((tp.y - it.y) / d) * step; }
+    }
     for (const p of players) {
       const rr = p.r + 20;
       if ((p.x - it.x) ** 2 + (p.y - it.y) ** 2 < rr * rr) { pickupItem(s, p, it); break; }
@@ -794,10 +842,10 @@ function update(s, inputs, dt) {
 function choiceLabel(c, p) {
   if (c.kind === 'evo') {
     const E = WEAPONS[p.weaponKey].evolutions[c.key];
-    return { title: '진화 · ' + E.name, name: E.name, glyph: E.glyph, color: E.color, tag: p.evos.length ? '마지막 진화' : `진화 · 레벨 ${EVO.LEVELS[1]}에 나머지를 받아요`, desc: E.desc };
+    return { title: '진화 · ' + E.name, name: E.name, glyph: E.glyph, color: E.color, tag: p.evos.length ? '마지막 진화' : '진화 · 다음 보스 상자에서 나머지를 받아요', desc: E.desc };
   }
   if (c.kind === 'node') {
-    const N = WEAPONS[p.weaponKey].nodes[c.key], desc = Array.isArray(N.desc) ? N.desc[c.lv] : N.desc;
+    const N = WEAPONS[p.weaponKey].nodes[c.key], desc = typeof N.desc === 'function' ? N.desc(c.lv) : Array.isArray(N.desc) ? N.desc[c.lv] : N.desc;
     return { title: `${N.name} Lv ${c.lv}`, name: N.name, glyph: N.glyph, color: N.color, tag: c.lv === 1 ? '새 기술' : `Lv ${c.lv} / ${N.max}`, desc };
   }
   if (c.kind === 'heal') return { title: '체력 완전 회복', name: '따뜻한 차', glyph: '+', color: '#ff7f8f', tag: '회복', desc: '체력을 모두 회복합니다' };
@@ -933,6 +981,8 @@ function buildSprites() {
   }));
   S.chest = fromRows(['.bbbbbbbb.', 'bBBBBBBBBb', 'bBBBBBBBBb', 'yyyyyyyyyy', 'bbbbyybbbb', 'bbbbyybbbb', 'bbbbbbbbbb', 'bbbbbbbbbb'],
     { b: '#7a4b2a', B: '#a0663a', y: '#ffcc4d' });
+  S.evochest = fromRows(['..pppppppp..', '.pPPPPPPPPp.', 'pPPPPPPPPPPp', 'pPPPPPPPPPPp', 'yyyyyyyyyyyy', 'ppppywwyyppp', 'pppppyyppppp', 'pppppppppppp', 'pppppppppppp'],
+    { p: '#5a3d8a', P: '#8a63c9', y: '#ffcc4d', w: '#ffffff' });
   const gem = (c, hi) => fromRows(['.a.', 'aba', 'aaa', '.a.'], { a: c, b: hi });
   S.gem = [gem('#6fe3c4', '#d8fff0'), gem('#86b8ff', '#e0ecff'), gem('#ff8aa5', '#ffe0e8')];
   S.sword = fromRows(['.w.', '.w.', '.w.', '.w.', '.w.', 'yyy', '.b.', '.b.'], { w: '#dfe8ee', y: '#ffcc4d', b: '#6a4a30' }, { flip: true });
@@ -1041,7 +1091,7 @@ function createRenderer(canvas) {
           if (p) { v.rings.push({ x: p.x, y: p.y, r: 10, to: 120, life: 0.6, max: 0.6, c: '#ffb547' }); v.texts.push({ x: p.x, y: p.y, text: 'LEVEL UP', c: '#ffb547', life: 1.2, max: 1.2, pix: true, rise: 26, jx: 0 }); }
           break;
         }
-        case 'slash': v.slashes.push({ pid: ev.pid, a: ev.a, arc: ev.arc, R: ev.R, w: ev.w, spin: ev.spin, mirror: ev.mirror, life: ev.spin ? 0.24 : 0.16, max: ev.spin ? 0.24 : 0.16 }); break;
+        case 'slash': v.slashes.push({ pid: ev.pid, a: ev.a, arc: ev.arc, R: ev.R, fwd: ev.fwd || 0, w: ev.w, spin: ev.spin, mirror: ev.mirror, life: ev.spin ? 0.24 : 0.16, max: ev.spin ? 0.24 : 0.16 }); break;
         case 'execute':
           v.texts.push({ x: ev.x, y: ev.y, text: '처형', c: '#ff5d6e', life: 0.8, max: 0.8, rise: 12 });
           for (let i = 0; i < 12 && v.particles.length < 450; i++) { const a = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 120; v.particles.push({ x: ev.x, y: ev.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, z: 6, vz: 40 + Math.random() * 60, life: 0.5, max: 0.5, c: '#ef5a6f', size: 2 }); }
@@ -1128,7 +1178,10 @@ function createRenderer(canvas) {
     const sx = SX(p.x, p.y), sy = SY(p.x, p.y);
     if (!p.alive) { L.globalAlpha = 0.45; blit(SPR.player.back[0], sx, sy, false); L.globalAlpha = 1; return; }
     const swinging = p.atk && p.atk.swingT > 0;
-    const fx = swinging ? p.ax : p.fx, fy = swinging ? p.ay : p.fy;
+    const spinning = p.atk && p.atk.spinT > 0;
+    // 회전 베기 중에는 이동·시선과 상관없이 몸이 빙글빙글 돎 (한 바퀴 = EVO.whirlRot초)
+    const th = spinning ? (t * Math.PI * 2) / EVO.whirlRot : 0;
+    const fx = spinning ? Math.cos(th) : swinging ? p.ax : p.fx, fy = spinning ? Math.sin(th) : swinging ? p.ay : p.fy;
     const sfx = fx - fy, sfy = fx + fy;
     const set = sfy < -0.35 ? SPR.player.back : SPR.player.front;
     const frame = p.moving ? Math.floor(t * 8) % 2 : 0;
@@ -1137,9 +1190,23 @@ function createRenderer(canvas) {
     const spr = set[frame];
     const left = sx - (spr.w >> 1), top = sy - bob - spr.h + 1;
     const two = p.weaponKey === 'greatsword';
+    // 회전 중: 몸 바깥으로 뻗은 칼날 (뒤쪽을 향하면 몸 뒤에 그림)
+    let blade = null;
+    if (spinning) {
+      const len = WEAPONS[p.weaponKey].base.range * p.stats.range * (two ? 0.62 : 0.55);
+      const hx = sx, hy = sy - 8, tx = Math.round(v.ox + (p.x + fx * len - (p.y + fy * len)) * ISO_A), ty = Math.round(v.oy + (p.x + fx * len + p.y + fy * len) * ISO_A * 0.5) - 8;
+      blade = () => {
+        L.lineCap = 'round';
+        L.strokeStyle = OUTLINE; L.lineWidth = two ? 4 : 3; L.beginPath(); L.moveTo(hx, hy); L.lineTo(tx, ty); L.stroke();
+        L.strokeStyle = two ? '#eef3f6' : '#dfe8ee'; L.lineWidth = two ? 2 : 1; L.beginPath(); L.moveTo(hx, hy); L.lineTo(tx, ty); L.stroke();
+        L.fillStyle = '#ffcc4d'; L.fillRect(Math.round(hx + (tx - hx) * 0.12) - 1, Math.round(hy + (ty - hy) * 0.12) - 1, 2, 2);
+      };
+    }
+    if (blade && sfy < 0) blade();
     if (two && !swinging) { const g = SPR.greatsword; L.drawImage(flip ? g.f : g.n, flip ? left + spr.w - g.w + 3 : left - 3, top - 2); }
     blit(spr, sx, sy - bob, flip);
     if (!two && !swinging) { const w = SPR.sword; L.drawImage(flip ? w.f : w.n, flip ? left + spr.w - 4 : left - 1, top + 6); }
+    if (blade && sfy >= 0) blade();
     L.globalAlpha = 1;
     p._lantern = [left + (flip ? spr.w - 1 - 11 : 11), top + 10];
     // 체력바
@@ -1174,8 +1241,6 @@ function createRenderer(canvas) {
     ctx.font = `700 30px ${FONT_PIX}`;
     ctx.fillStyle = '#0a1012'; ctx.fillText(fmtTime(s.time), W / 2 + 3, top + 23);
     ctx.fillStyle = remain < 60 ? '#ffb547' : '#dbe9e3'; ctx.fillText(fmtTime(s.time), W / 2, top + 20);
-    ctx.fillStyle = '#8faaa4'; ctx.font = `600 12px ${FONT_UI}`;
-    ctx.fillText(`새벽까지 ${fmtTime(remain)}`, W / 2, top + 56);
     // 처치 / 금화
     ctx.textAlign = 'right'; ctx.font = `700 14px ${FONT_PIX}`;
     ctx.fillStyle = '#dbe9e3'; ctx.font = `700 14px ${FONT_UI}`; ctx.fillText(`처치 ${me.kills.toLocaleString()}`, R - 60, top + 22);
@@ -1283,6 +1348,7 @@ function createRenderer(canvas) {
           const spr = o.kind === 'bomb' ? SPR.bomb[Math.floor(t * 6) % 2] : SPR[o.kind];
           blit(spr, sx, sy, false);
           if (o.kind === 'chest') lights.push([sx, sy - 4, 14, 'rgba(255, 210, 120, 0.35)']);
+          if (o.kind === 'evochest') lights.push([sx, sy - 5, 24, 'rgba(200, 160, 255, 0.55)']);
           break;
         }
         case 'orb': { const sx = SX(it.o.x, it.o.y), sy = SY(it.o.x, it.o.y) - 9; blit(SPR.orb, sx, sy + 2, false); lights.push([sx, sy, 12, 'rgba(255, 180, 80, 0.5)']); break; }
@@ -1326,12 +1392,14 @@ function createRenderer(canvas) {
     const lx = me && me.alive ? psx : bw / 2, ly = me && me.alive ? psy - 6 : bh / 2;
     const flick = 1 + Math.sin(t * 7) * 0.015 + Math.sin(t * 13.3) * 0.01;
     L.save(); L.translate(lx, ly); L.scale(1, 0.62);
-    const R = Math.max(bw, bh) * 0.62 * flick;
+    const vlv = me ? me.stats.vision || 0 : 5;
+    const R = Math.max(bw, bh) * 0.62 * flick * VISION.radius[vlv];
     const dg = L.createRadialGradient(0, 0, 0, 0, 0, R);
     [[0, 0], [0.3, 0], [0.3, 0.16], [0.46, 0.16], [0.46, 0.34], [0.64, 0.34], [0.64, 0.52], [0.82, 0.52], [0.82, 0.66], [1, 0.72]]
-      .forEach(([o, a]) => dg.addColorStop(o, `rgba(4, 10, 16, ${a})`));
+      .forEach(([o, a]) => dg.addColorStop(o, `rgba(4, 10, 16, ${a * VISION.dark[vlv]})`));
     L.fillStyle = dg; L.fillRect(-bw * 2, -bh * 4, bw * 4, bh * 8);
     L.restore();
+
 
     // 빛 (가산 혼합)
     L.globalCompositeOperation = 'lighter';
@@ -1346,15 +1414,16 @@ function createRenderer(canvas) {
       const two = sl.w === 'greatsword', dir = sl.mirror ? -1 : 1;
       const full = sl.spin ? Math.PI * 2 : sl.arc;
       const a0 = sl.spin ? sl.a : sl.a - (full / 2) * dir, span = full * sweep * dir;
-      const inner = sl.R * (two ? 0.45 : 0.55), steps = 18;
+      const kIn = two ? 0.45 : 0.55, steps = 18;
+      const ro = th => sl.R * (1 + sl.fwd * Math.max(0, Math.cos(th - sl.a)) ** 2);
       const P = (r, th) => [v.ox + (p.x + Math.cos(th) * r - (p.y + Math.sin(th) * r)) * ISO_A, v.oy + (p.x + Math.cos(th) * r + p.y + Math.sin(th) * r) * ISO_A * 0.5 - 6];
       L.beginPath();
-      for (let i = 0; i <= steps; i++) { const [x, y] = P(sl.R, a0 + (span * i) / steps); i ? L.lineTo(x, y) : L.moveTo(x, y); }
-      for (let i = steps; i >= 0; i--) { const th = a0 + (span * i) / steps, taper = Math.sin((Math.PI * i) / steps); const [x, y] = P(sl.R - (sl.R - inner) * taper, th); L.lineTo(x, y); }
+      for (let i = 0; i <= steps; i++) { const th = a0 + (span * i) / steps; const [x, y] = P(ro(th), th); i ? L.lineTo(x, y) : L.moveTo(x, y); }
+      for (let i = steps; i >= 0; i--) { const th = a0 + (span * i) / steps, taper = Math.sin((Math.PI * i) / steps), r = ro(th); const [x, y] = P(r - r * (1 - kIn) * taper, th); L.lineTo(x, y); }
       L.closePath();
       L.globalAlpha = fade * (two ? 0.75 : 0.65); L.fillStyle = two ? '#ffcf7a' : '#cfeaff'; L.fill();
       L.globalAlpha = fade; L.strokeStyle = '#ffffff'; L.lineWidth = 1; L.beginPath();
-      for (let i = 0; i <= steps; i++) { const [x, y] = P(sl.R, a0 + (span * i) / steps); i ? L.lineTo(x, y) : L.moveTo(x, y); }
+      for (let i = 0; i <= steps; i++) { const th = a0 + (span * i) / steps; const [x, y] = P(ro(th), th); i ? L.lineTo(x, y) : L.moveTo(x, y); }
       L.stroke();
     }
     L.globalAlpha = 1;
@@ -1403,7 +1472,7 @@ function createRenderer(canvas) {
 
     if (me && opts.hud !== false) {
       // 화면 밖 보물상자 / 보스 방향
-      const marks = s.items.filter(i => i.kind === 'chest').map(i => [i, '#ffd27a']);
+      const marks = s.items.filter(i => i.kind === 'chest' || i.kind === 'evochest').map(i => [i, i.kind === 'evochest' ? '#d6b8ff' : '#ffd27a']);
       for (const e of s.enemies) if (e.boss) marks.push([e, '#ff5d6e']);
       for (const [o, c] of marks) {
         const sx = SX(o.x, o.y) * PXs, sy = SY(o.x, o.y) * PXs;
@@ -1468,7 +1537,7 @@ function loadBest() { try { return JSON.parse(localStorage.getItem('lantern-ward
 function saveBest(rec) { try { localStorage.setItem('lantern-warden-best', JSON.stringify(rec)); } catch {} }
 function refreshBest() {
   const b = loadBest();
-  $('bestLine').textContent = b ? `최고 기록 · ${fmtTime(b.time)} 생존 · 레벨 ${b.level} · 처치 ${b.kills.toLocaleString()}` : '20분을 버티면 새벽이 옵니다.';
+  $('bestLine').textContent = b ? `최고 기록 · ${fmtTime(b.time)} 생존 · 레벨 ${b.level} · 처치 ${b.kills.toLocaleString()}` : '15분 57초를 버티면 새벽이 옵니다.';
 }
 
 let lastWeapon = 'sword';
@@ -1498,7 +1567,7 @@ function renderChoices(p) {
   const cards = $('cards');
   cards.innerHTML = '';
   const isEvo = p.choices[0] && p.choices[0].kind === 'evo';
-  $('lvEyebrow').textContent = (isEvo ? '진화 · ' : '') + `레벨 ${p.level}` + (p.pendingLevels > 1 ? ` · 남은 선택 ${p.pendingLevels}` : '');
+  $('lvEyebrow').textContent = (isEvo ? '보스 상자 · 진화' : `레벨 ${p.level}`) + (p.pendingLevels > 1 ? ` · 남은 선택 ${p.pendingLevels}` : '');
   $('lvTitle').textContent = !isEvo ? '강화를 하나 고르세요' : p.evos.length ? '마지막 진화를 받으세요' : '진화를 하나 고르세요';
   cards.style.setProperty('--n', p.choices.length);
   p.choices.forEach((c, i) => {
@@ -1518,7 +1587,7 @@ function endGame() {
   const p = state.players[localId], win = state.phase === 'victory';
   $('endEyebrow').textContent = win ? '생존 성공' : '쓰러짐';
   $('endTitle').textContent = win ? '새벽이 밝았습니다' : '등불이 꺼졌습니다';
-  $('endText').textContent = win ? '20분 동안 어둠을 버텨냈습니다. 숲에 아침이 찾아옵니다.' : `${fmtTime(state.time)} 동안 버텼습니다. 다시 등불을 밝혀 보세요.`;
+  $('endText').textContent = win ? '15분 57초 동안 어둠을 버텨냈습니다. 숲에 아침이 찾아옵니다.' : `${fmtTime(state.time)} 동안 버텼습니다. 다시 등불을 밝혀 보세요.`;
   $('endStats').innerHTML = statHtml([['생존 시간', fmtTime(state.time)], ['레벨', p.level], ['처치', p.kills.toLocaleString()], ['금화', p.gold], ['보물상자', p.chests]]);
   const b = loadBest();
   if (!b || state.time > b.time || (state.time === b.time && p.kills > b.kills)) saveBest({ time: Math.floor(state.time), level: p.level, kills: p.kills });
