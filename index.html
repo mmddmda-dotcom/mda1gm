@@ -120,6 +120,40 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 #ovLevel.ascend .card-name { font-family: var(--font-display); font-weight: 400; font-size: 30px; color: #ffd27a; letter-spacing: 0.06em; }
 #ovLevel.ascend .tag { color: #ff9a3a; }
 #ovLevel.ascend .card-desc { color: #e6c8b8; font-size: 15px; }
+/* 계정 */
+.acct-chip { appearance: none; display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; cursor: pointer; background: var(--panel-2); border: 2px solid var(--line); border-radius: 2px; padding: 8px 12px; color: var(--mist); font-family: var(--font-body); touch-action: manipulation; }
+.acct-chip:hover, .acct-chip:focus-visible { border-color: var(--amber); outline: none; }
+.acct-ava { width: 34px; height: 34px; flex: none; display: grid; place-items: center; background: #1f5561; color: #f1dcc0; font-family: var(--font-display); font-size: 18px; box-shadow: inset -3px -3px 0 rgba(0,0,0,0.25); }
+.acct-txt { display: grid; min-width: 0; flex: 1; }
+.acct-txt b { font-size: 16px; color: var(--amber); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-txt small { font-size: 12px; color: var(--mist-dim); }
+.acct-go { font-size: 13px; color: var(--mist-dim); white-space: nowrap; }
+.acct-name-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.acct-name-row label { color: var(--amber); font-size: 15px; }
+.acct-name-row input { min-width: 0; font: 600 16px var(--font-body); color: var(--mist); background: var(--panel-2); border: 2px solid var(--line); border-radius: 2px; padding: 10px 12px; }
+.acct-name-row input:focus { border-color: var(--amber); outline: none; }
+.acct-name-row .btn { padding: 8px 18px; font-size: 16px; min-height: 44px; }
+.stats.small b { font: 700 14px var(--font-body); letter-spacing: 0; }
+.auth-box { display: grid; gap: 12px; background: var(--panel-2); padding: 14px; border-radius: 2px; }
+.auth-tabs { display: flex; gap: 6px; }
+.auth-tabs button { appearance: none; flex: 1; font: 700 15px var(--font-body); color: var(--mist-dim); background: transparent; border: 2px solid var(--line); border-radius: 2px; padding: 8px; cursor: pointer; }
+.auth-tabs button.on { color: #1d1206; background: var(--amber); border-color: var(--amber); }
+.auth-form { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; align-items: center; }
+.auth-form label { color: var(--amber); font-size: 14px; }
+.auth-form input { min-width: 0; font: 600 16px var(--font-body); color: var(--mist); background: var(--panel); border: 2px solid var(--line); border-radius: 2px; padding: 10px 12px; }
+.auth-form input:focus { border-color: var(--amber); outline: none; }
+.auth-form .btn, .auth-err { grid-column: 1 / -1; }
+.auth-err { margin: 0; min-height: 1.2em; color: #ff9aa6; font-size: 14px; }
+.auth-online { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: var(--panel-2); padding: 12px 14px; border-radius: 2px; color: var(--jade); font-weight: 700; }
+.auth-online .btn { padding: 8px 18px; font-size: 16px; min-height: 44px; }
+.acct-asc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .acct-asc { grid-template-columns: 1fr; } }
+.asc-card { background: var(--panel-2); border: 2px solid var(--line); border-radius: 2px; padding: 12px; display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; align-items: center; min-width: 0; }
+.asc-card img { width: 48px; height: 48px; image-rendering: pixelated; display: block; }
+.asc-card .q { width: 48px; height: 48px; display: grid; place-items: center; background: #0a1012; color: var(--mist-dim); font-family: var(--font-display); font-size: 22px; }
+.asc-card b { display: block; color: var(--amber); font-size: 15px; }
+.asc-card span { display: block; font-size: 12px; color: var(--mist-dim); line-height: 1.45; }
+.asc-card.locked b { color: var(--mist-dim); }
 .wpick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 640px) { .wpick { grid-template-columns: 1fr; } }
 .wcard { appearance: none; text-align: left; cursor: pointer; color: var(--mist); font-family: var(--font-body);
@@ -173,6 +207,11 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
 
 <div id="ovStart" class="overlay">
   <div class="panel">
+    <button class="acct-chip" id="btnAccount" type="button" aria-label="계정 열기">
+      <span class="acct-ava" id="acctAva" aria-hidden="true"></span>
+      <span class="acct-txt"><b id="acctName"></b><small id="acctMeta"></small></span>
+      <span class="acct-go">계정 ›</span>
+    </button>
     <div class="eyebrow">밤의 숲 · 15분 생존</div>
     <h1>등불 파수꾼</h1>
     <p>새벽이 올 때까지 등불을 지키세요. 사방에서 몰려오는 어둠을 물리치고, 떨어진 별조각을 모아 강해지세요.</p>
@@ -213,6 +252,45 @@ p { margin: 0; line-height: 1.6; color: var(--mist); max-width: 62ch; }
       <button class="btn ghost" id="btnQuit" type="button">처음으로</button>
       <button class="btn ghost fs-btn" type="button">전체화면</button>
     </div>
+  </div>
+</div>
+
+<div id="ovAccount" class="overlay" hidden>
+  <div class="panel wide">
+    <div class="eyebrow">계정</div>
+    <h2 id="acTitle"></h2>
+    <div class="auth-box" id="acAuth" hidden>
+      <div class="auth-tabs" role="tablist">
+        <button type="button" id="tabLogin" class="on" role="tab" aria-selected="true">로그인</button>
+        <button type="button" id="tabSignup" role="tab" aria-selected="false">가입하기</button>
+      </div>
+      <form id="authForm" class="auth-form" novalidate>
+        <label for="authNick">닉네임</label>
+        <input id="authNick" type="text" maxlength="12" autocomplete="username" spellcheck="false" placeholder="한글·영문·숫자 2~12자">
+        <label for="authPw">비밀번호</label>
+        <input id="authPw" type="password" autocomplete="current-password" placeholder="6자 이상">
+        <label for="authPw2" id="authPw2Label" hidden>비밀번호 확인</label>
+        <input id="authPw2" type="password" autocomplete="new-password" hidden>
+        <p class="auth-err" id="authErr" role="alert"></p>
+        <button class="btn" id="authSubmit" type="submit">로그인</button>
+      </form>
+    </div>
+    <div class="auth-online" id="acOnline" hidden>
+      <span>온라인 계정으로 로그인했어요.</span>
+      <button class="btn ghost" id="btnLogout" type="button">로그아웃</button>
+    </div>
+    <div class="acct-name-row" id="acNickRow">
+      <label for="nickInput" id="nickLabel">닉네임</label>
+      <input id="nickInput" type="text" maxlength="12" autocomplete="off" spellcheck="false">
+      <button class="btn" id="btnNick" type="button">저장</button>
+    </div>
+    <p class="muted" id="acStore"></p>
+    <div class="stats" id="acStats"></div>
+    <div class="eyebrow">무기별 기록</div>
+    <div class="stats small" id="acWeapons"></div>
+    <div class="eyebrow">각성 도감</div>
+    <div class="acct-asc" id="acAscends"></div>
+    <div class="actions"><button class="btn ghost" id="btnAcctClose" type="button">닫기</button></div>
   </div>
 </div>
 
@@ -285,8 +363,9 @@ const ELEMENTS = {
     bossBreakPct: 0.03,  // 보스는 이만큼
     shatterRadius: 80, shatterPct: 0.40,  // 깨질 때 파편: 주변 적에게 최대 체력 % 피해 (보스 제외)
     immuneSec: 1.5,      // 깨진 뒤 냉기 면역
+    bossSlow: 0.4, bossVuln: 0.2,  // 보스: 얼지 않고 이동 속도 40% 감소 + 받는 피해 20% 증가
     raidBreak: 0.65,     // 아브루: 깨짐 피해 = 내 무기 초당 피해 × 이 값
-    get desc() { return `적중 시 빙결(완전 정지, 최대 ${this.freezeSec}초). 얼고 ${this.lockSec}초 뒤에 맞으면 깨지면서 최대 체력 ${Math.round(this.breakPct * 100)}% 추가 피해 + 주변 적에게 파편 ${Math.round(this.shatterPct * 100)}% 피해. 깨진 적은 ${this.immuneSec}초 동안 다시 얼지 않음`; },
+    get desc() { return `적중 시 빙결(완전 정지, 최대 ${this.freezeSec}초. 보스는 대신 이동 속도 ${Math.round(this.bossSlow * 100)}% 감소 + 받는 피해 ${Math.round(this.bossVuln * 100)}% 증가). 얼고 ${this.lockSec}초 뒤에 맞으면 깨지면서 최대 체력 ${Math.round(this.breakPct * 100)}% 추가 피해 + 주변 적에게 파편 ${Math.round(this.shatterPct * 100)}% 피해. 깨진 적은 ${this.immuneSec}초 동안 다시 얼지 않음`; },
   },
   elec: {
     key: 'elec', name: '전기', glyph: '⚡', color: '#ffd24d', glow: 'rgba(255, 210, 77, 0.58)',
@@ -495,6 +574,7 @@ function createPlayer(id, name, hue, weaponKey = 'sword') {
 
 function addPlayer(s, id, opts = {}) {
   const p = createPlayer(id, opts.name || '파수꾼', opts.hue ?? 192, opts.weapon || 'sword');
+  p.accountId = opts.accountId || null;  // 계정 연결 (멀티플레이 대비)
   const n = Object.keys(s.players).length;
   p.x = n * 40; p.y = 0;
   s.players[id] = p;
@@ -520,7 +600,8 @@ function recalcStats(p) {
     magnet: CONFIG.PLAYER.magnet * (1 + m.magnet),
     xpMult: 1 + m.xp + (evo.awaken ? EVO.awakenXp : 0),
     killHaste: m.haste, firstHit: m.firstHit, vision: Math.min(5, m.vision), armor: m.armor, killHeal: m.killHeal,
-    regen: evo.awaken ? EVO.awakenRegen : 0, dodge: evo.awaken ? EVO.awakenDodge : 0, healMult: evoUp.awaken ? EVO.awakenHealUp : 1,
+    regen: (evo.awaken ? EVO.awakenRegen : 0) + (p.ascend ? ASCEND_REGEN : 0),  // 각성하면 초당 체력 회복 추가
+    dodge: evo.awaken ? EVO.awakenDodge : 0, healMult: evoUp.awaken ? EVO.awakenHealUp : 1,
     crit: m.crit + elemCrit,
     critMult: 2 + m.critDmg + elemCritDmg,
     whirlRot: evoUp.whirl ? EVO.whirlRotUp : EVO.whirlRot, evoUp,
@@ -632,7 +713,10 @@ function applyElementHit(s, p, e, isCrit, dmg = 0) {
   } else if (elem === 'ice') {
     // 둔화 2초 (중첩 불가, 재적중 시 2초 갱신): 이속 70% 감소 + 받는 피해 20% 증가
     const ic = ELEMENTS.ice;
-    if ((e.chillT || 0) > 0) {
+    if (e.boss) {  // 보스는 얼지 않고 둔화 + 받는 피해 증가 (지속시간 갱신)
+      if (!((e.chillT || 0) > 0)) emit(s, { t: 'ehit', elem: 'ice', x: e.x, y: e.y, h: e.r });
+      e.chillT = ic.freezeSec;
+    } else if ((e.chillT || 0) > 0) {
       if ((s.tick - (e.freezeAt || 0)) * CONFIG.TICK >= ic.lockSec) iceBreak(s, p, e);  // 최종전에선 s.time이 멈추므로 틱 기준  // 언 상태에서 맞으면 깨짐
     } else if (!((e.iceImmT || 0) > 0)) {
       e.chillT = ic.freezeSec; e.freezeAt = s.tick;
@@ -844,9 +928,9 @@ const ABRU = {
   TOUCH: 30,           // 몸에 닿으면 받는 피해
   R: 46, SPEED: 145,
   INTRO: 4.2,          // 등장 연출(초)
-  SWIPE: { wind: 0.7, r: 190, arc: 2.4, dmg: 144 },   // 팔 휘두르기: 부채꼴
-  STOMP: { wind: 1.44, r: 250, dmg: 150 },             // 지진: 보스 주변 원
-  ROOTS: { wind: 0.5, r: 44, n: 10, gap: 0.32, dmg: 110 }, // 뿌리: 캐릭터 위치를 따라 연속으로 솟음
+  SWIPE: { wind: 0.7, r: 190, arc: 2.4, dmg: 96 },   // 팔 휘두르기: 부채꼴
+  STOMP: { wind: 1.44, r: 250, dmg: 100 },             // 지진: 보스 주변 원
+  ROOTS: { wind: 0.5, r: 44, n: 10, gap: 0.32, dmg: 73 }, // 뿌리: 캐릭터 위치를 따라 연속으로 솟음
   RECOVER: 0.7,        // 공격 사이 숨 고르기
   TIRED: 3,            // 공격 2회 뒤 딜타임
   SPROUT: { at: 0.5, n: 12, sec: 15, hpPct: 0.01, minR: 120, maxR: 300, bindBase: 1.5, bindPer: 0.5, bindMax: 5 },
@@ -942,6 +1026,7 @@ function updateRaid(s, dt) {
   const R = e.raid; R.t += dt;
   if (!s.hazards) s.hazards = [];
   updateHazards(s, dt);
+  if (e.iceLock) { R.t = 0; return; }  // 빙하기 얼음 결정 속: 아무것도 못 함
   if (R.st === 'dying' || R.st === 'intro') return;
   const p = abruTarget(s, e); if (!p) return;
   const dx = p.x - e.x, dy = p.y - e.y, d = Math.hypot(dx, dy) || 1;
@@ -953,7 +1038,7 @@ function updateRaid(s, dt) {
     case 'chase': {
       if (!R.next) R.next = ['swipe', 'stomp', 'roots'][(rnd(s) * 3) | 0];
       const need = R.next === 'roots' ? Infinity : R.next === 'swipe' ? ABRU.SWIPE.r * 0.75 : ABRU.STOMP.r * 0.6;
-      if (d > need && R.t < 2.4) { const sp = ABRU.SPEED * (1 + (s.time ? 0 : 0)); e.x += (dx / d) * sp * dt; e.y += (dy / d) * sp * dt; R.face = Math.atan2(dy, dx); R.walk = 1; }
+      if (d > need && R.t < 2.4) { const sp = ABRU.SPEED * ((e.chillT || 0) > 0 ? 1 - ELEMENTS.ice.bossSlow : 1); e.x += (dx / d) * sp * dt; e.y += (dy / d) * sp * dt; R.face = Math.atan2(dy, dx); R.walk = 1; }
       else abruBeginCast(s, e, R.next, p);
       break;
     }
@@ -986,11 +1071,26 @@ function updateRaid(s, dt) {
 /* ===================== 각성 (무기 + 원소 + 레벨 50) =====================
    각성하면 피해량이 크게 오르고, 체력바 밑에 각성 스킬 버튼이 생김.
    스킬: 처음엔 충전된 상태. 다시 쓰려면 아브루에게 (평타+원소) 피해를 최대 체력의 chargePct만큼 넣어야 1회 충전 (중첩 없음, 스킬 자신의 피해는 제외) */
+const ASCEND_REGEN = 2;  // 모든 각성 공통: 초당 체력 회복
 const ASCEND = {
   dragonKnight: {
     name: '용기사', desc: '불의 용을 다루는 왕의 기사', weapon: 'sword', element: 'fire', level: 50,
     dmgMult: 10,    // 각성 피해 배율 (스킬 포함 아브루 약 1분 25초)
     skill: { name: '적룡의 숨결', desc: '용을 불러 화면 안의 모든 적을 불태운다.', dur: 4.5, bossPct: 0.15, chargePct: 0.35, postInvuln: 1.0 },
+  },
+  frostGeneral: {
+    name: '혹한의 장군', desc: '백만 년 전 얼음 속에 잠든 장군', weapon: 'greatsword', element: 'ice', level: 50,
+    dmgMult: 14,    // 각성 피해 배율
+    skill: { name: '빙하기', desc: '눈보라를 일으켜 화면 안의 모든 적을 얼린다.', intro: 0.8, dur: 10,
+      tickPct: 0.01,       // 화면 안 잡몹: 매 틱 최대 체력의 1%
+      bossTickPct: 0.01,   // 보스: 초당 최대 체력의 1%
+      bossVuln: 3.0,       // 얼어붙은 보스가 받는 피해 +300% (얼린 뒤 3초 안에 깨지게 조정)
+      breakPct: 0.10, bonusPct: 0.05, chargePct: 0.35 },
+  },
+  judge: {
+    name: '심판자', desc: '악을 심판하는 자', weapon: 'spear', element: 'light', level: 50,
+    dmgMult: 10,    // 각성 피해 배율 (스킬 포함 아브루 약 1분 10초)
+    skill: { name: '롱기누스의 창', desc: '창을 던져 적을 무력화시킨다.', dur: 4.8, bossPct: 0.15, chargePct: 0.35, postInvuln: 1.0 },
   },
 };
 const ascendFor = p => Object.keys(ASCEND).find(k => { const A = ASCEND[k]; return A.weapon === p.weaponKey && A.element === p.element && p.level >= A.level; });
@@ -1004,31 +1104,105 @@ function chargeSkill(s, p, e, dmg) {
   p.skill.charge += dmg;
   if (p.skill.charge >= e.maxHp * ASCEND[p.ascend].skill.chargePct) { p.skill.ready = true; p.skill.charge = 0; emit(s, { t: 'skillReady', pid: p.id }); }
 }
-function useSkill(s, p, targets) {
+function useSkill(s, p, targets, radius, focus) {
   if (!p.ascend || !p.skill || !p.skill.ready || s.cine) return;
   if (s.final && (s.final.phase === 'intro' || s.final.phase === 'dying' || s.final.phase === 'done')) return;
-  p.skill.ready = false; p.skill.charge = 0;
+  if (s.blizz) return;
+  p.skill.ready = false; p.skill.charge = 0; p.skillUses = (p.skillUses || 0) + 1;
+  if (p.ascend === 'frostGeneral') { startBlizzard(s, p, targets, radius); return; }
+  if (p.ascend === 'judge') {  // 창이 꽂힐 대상(최종 보스, 없으면 화면에서 체력이 가장 많은 적)을 화면 가운데에 두고 그 화면 안의 적을 심판
+    const f = s.enemies.find(e => e.id === focus && !e.dead);
+    if (!f) { p.skill.ready = true; return; }
+    const live = new Set(targets || []); live.add(f.id);
+    s.cine = { kind: 'judge', t: 0, dur: ASCEND.judge.skill.dur, pid: p.id, focus: f.id, targets: s.enemies.filter(e => live.has(e.id) && !e.dead).map(e => e.id) };
+    emit(s, { t: 'cine', kind: 'judge' });
+    return;
+  }
   const live = new Set(targets || []);
   s.cine = { kind: p.ascend, t: 0, dur: ASCEND[p.ascend].skill.dur, pid: p.id, targets: s.enemies.filter(e => live.has(e.id) && !e.dead).map(e => e.id) };
   emit(s, { t: 'cine', kind: p.ascend });
 }
+/* 혹한의 장군 · 빙하기: 10초 눈보라. 시작 0.8초는 멈춤(모두 얼어붙음), 이후 플레이어만 움직임.
+   화면 안 잡몹: 매 틱 최대 체력 1% + 맞으면 산산조각. 보스: 얼음 결정에 갇혀 초당 1% + 받는 피해 증가,
+   최대 체력 breakPct만큼 받으면 '얼음 파괴!'로 bonusPct를 더 받고 스킬 종료 */
+function startBlizzard(s, p, targets, radius) {
+  const A = ASCEND[p.ascend].skill, live = new Set(targets || []);
+  s.blizz = { t: 0, pid: p.id, r: radius || 520, bossId: null, dealt: 0 };
+  for (const e of s.enemies) if (live.has(e.id)) blizzFreeze(s, e);
+  for (const e of s.enemies) if (e.raid) { /* 화면 밖 아브루는 다가오면 얼림 */ }
+  emit(s, { t: 'blizzStart' });
+}
+function blizzFreeze(s, e) {
+  const B = s.blizz; if (!B || e.dead) return;
+  if (e.raid || e.boss) {
+    if (B.bossId !== null || e.untargetable || B.bossDone) return;
+    B.bossId = e.id; B.dealt = 0; e.iceLock = true;
+    if (e.raid) { e.raid.cast = null; s.hazards = []; }
+    emit(s, { t: 'bossFreeze', x: e.x, y: e.y });
+  } else { e.blizz = true; e.chillT = Math.max(e.chillT || 0, 0.5); e.freezeAt = s.tick; }
+}
+function blizzBossDamage(s, e, dmg) {  // 얼어붙은 보스가 받은 피해 누적 → 일정량이면 얼음 파괴
+  const B = s.blizz; if (!B || B.bossId !== e.id || !e.iceLock) return;
+  B.dealt += dmg;
+  const A = ASCEND.frostGeneral.skill;
+  if (B.dealt >= e.maxHp * A.breakPct) {
+    e.iceLock = false; B.bossDone = true;
+    emit(s, { t: 'frostBreak', x: e.x, y: e.y });
+    const bonus = e.maxHp * A.bonusPct; e.hp -= bonus; e.flash = 0.2;
+    emit(s, { t: 'dmg', x: e.x, y: e.y - e.r, v: bonus, k: 'crit' });
+    if (e.raid) { if (e.hp <= 0) { e.hp = 0; abruDeath(s, e); } else if (!e.raid.half && e.hp <= e.maxHp * ABRU.SPROUT.at) startSprout(s, e); else { e.raid.st = 'recover'; e.raid.t = 0; } }
+    endBlizzard(s);
+  }
+}
+function endBlizzard(s) {
+  if (!s.blizz) return;
+  for (const e of s.enemies) { if (e.blizz) { e.blizz = false; e.chillT = 0; } if (e.iceLock) { e.iceLock = false; if (e.raid) { e.raid.st = 'recover'; e.raid.t = 0; } } }
+  s.blizz = null;
+  emit(s, { t: 'blizzEnd' });
+}
+function updateBlizzard(s, dt) {  // 멈춤(0.8초)이 끝난 뒤 매 틱
+  const B = s.blizz, A = ASCEND.frostGeneral.skill, p = s.players[B.pid];
+  B.t += dt;
+  if (!p || B.t >= A.intro + A.dur) { endBlizzard(s); return; }
+  const r2 = B.r * B.r;
+  for (const e of s.enemies) {
+    if (e.dead) continue;
+    if ((e.x - p.x) ** 2 + (e.y - p.y) ** 2 > r2) continue;  // 화면 밖
+    if (e.raid || e.boss) {
+      if (!e.iceLock) { blizzFreeze(s, e); if (!e.iceLock) continue; }
+      const d = e.maxHp * A.bossTickPct * dt; e.hp -= d;  // 초당 1%
+      if (e.raid) abruCheck(s, e);
+      if (!s.blizz) return;
+      blizzBossDamage(s, e, d);
+      if (!s.blizz) return;
+    } else {
+      if (!e.blizz) blizzFreeze(s, e);
+      e.chillT = Math.max(e.chillT || 0, 0.5);
+      e.hp -= e.maxHp * A.tickPct;  // 매 틱 1%
+      if (e.hp <= 0) { emit(s, { t: 'icebreak', x: e.x, y: e.y }); killEnemy(s, e, p.id); }
+    }
+  }
+  // 새싹 단계로 넘어가 대상에서 빠진 보스는 얼음이 풀림
+  for (const e of s.enemies) if (e.iceLock && e.untargetable) e.iceLock = false;
+}
+
 function finishCine(s) {
   const c = s.cine, p = s.players[c.pid], A = ASCEND[c.kind];
-  s.cine = null;
+  s.cine = null; s.lastCineKind = c.kind;
   const ids = new Set(c.targets);
   for (const e of s.enemies) {
     if (e.dead || !ids.has(e.id)) continue;
     if (e.raid || e.boss) {
       if (e.untargetable) continue;  // 새싹 단계의 아브루는 대상이 아님
       const dmg = e.maxHp * A.skill.bossPct;
-      e.hp -= dmg; e.flash = 0.2; e.burnT = ELEMENTS.fire.burnSec; e.burnOwner = p ? p.id : null;
+      e.hp -= dmg; e.flash = 0.2; if (c.kind === 'dragonKnight') { e.burnT = ELEMENTS.fire.burnSec; e.burnOwner = p ? p.id : null; }
       emit(s, { t: 'dmg', x: e.x, y: e.y - e.r, v: dmg, k: 'crit' });
       if (e.raid) {  // 스킬은 50% 기믹을 뚫고 들어감: 넘어가면 바로 새싹 단계, 0이면 쓰러짐
         const R = e.raid;
         if (e.hp <= 0) { e.hp = 0; abruDeath(s, e); }
         else if (!R.half && e.hp <= e.maxHp * ABRU.SPROUT.at) startSprout(s, e);
       } else if (e.hp <= 0) killEnemy(s, e, p ? p.id : null);
-    } else { e.burnT = 0; e.chillT = 0; emit(s, { t: 'ash', x: e.x, y: e.y }); killEnemy(s, e, p ? p.id : null); }
+    } else { e.burnT = 0; e.chillT = 0; emit(s, { t: c.kind === 'judge' ? 'smite' : 'ash', x: e.x, y: e.y }); killEnemy(s, e, p ? p.id : null); }
   }
   s.enemies = s.enemies.filter(e => !e.dead);
   if (p) p.invuln = Math.max(p.invuln, A.skill.postInvuln);
@@ -1052,6 +1226,9 @@ function dropGem(s, x, y, v) {
 
 function damageEnemy(s, e, dmg, ownerId, kx, ky, kb, style, opts = {}) {
   if (e.dead || e.untargetable) return;
+  if (e.blizz && !opts.skill) { dmg = Math.max(dmg, e.hp + 1); emit(s, { t: 'icebreak', x: e.x, y: e.y }); }  // 눈보라에 언 잡몹: 맞으면 산산조각
+  if (e.iceLock) dmg *= 1 + ASCEND.frostGeneral.skill.bossVuln;  // 얼어붙은 보스: 받는 피해 증가
+  if (e.boss && (e.chillT || 0) > 0) dmg *= 1 + ELEMENTS.ice.bossVuln;  // 얼음 원소 둔화 중인 보스
   const allowElem = opts.allowElem !== false;
   const isCrit = !!opts.isCrit;
 
@@ -1064,7 +1241,9 @@ function damageEnemy(s, e, dmg, ownerId, kx, ky, kb, style, opts = {}) {
   emit(s, { t: 'dmg', x: e.x, y: e.y - e.r, v: dmg, k: style });
 
   const owner = s.players[ownerId];
-  chargeSkill(s, owner, e, dmg);
+  if (!opts.skill) chargeSkill(s, owner, e, dmg);
+  if (e.iceLock) blizzBossDamage(s, e, dmg);
+  if (e.dead) return;
   if (allowElem && owner && owner.element && e.hp > 0) {
     applyElementHit(s, owner, e, isCrit, dmg);
   }
@@ -1330,8 +1509,8 @@ function updateEnemies(s, players, dt) {
     }
 
     // 감전 스턴 · 얼음 빙결 중이면 이동 정지
-    const stunMult = (e.stunT || 0) > 0 || (e.chillT || 0) > 0 ? 0 : 1;
-    const chillMult = 1;
+    const stunMult = (e.stunT || 0) > 0 || ((e.chillT || 0) > 0 && !e.boss) ? 0 : 1;
+    const chillMult = e.boss && (e.chillT || 0) > 0 ? 1 - ELEMENTS.ice.bossSlow : 1;
     const sp = e.speed * CONFIG.ENEMY_SPEED_MULT * stunMult * chillMult * (e.slowT > 0 ? 0.6 : 1);
     const inv = 1 / (dist || 1);
     e.x += ((tp.x - e.x) * inv * sp + e.kbx) * dt;
@@ -1356,7 +1535,7 @@ function updateEnemies(s, players, dt) {
   // 접촉 피해
   for (const p of players) {
     forEachNear(p.x, p.y, p.r + 50, e => {
-      if (e.noContact || (e.stunT || 0) > 0 || (e.chillT || 0) > 0) return;
+      if (e.noContact || e.iceLock || (e.stunT || 0) > 0 || ((e.chillT || 0) > 0 && !e.boss)) return;  // 얼어붙은 잡몹은 충돌 피해 없음
       const rr = p.r + e.r * 0.85;
       if ((e.x - p.x) ** 2 + (e.y - p.y) ** 2 < rr * rr) hurtPlayer(s, p, e.dmg * CONFIG.ENEMY_DMG_MULT);
     });
@@ -1431,7 +1610,7 @@ function updatePickups(s, players, dt) {
 function processActions(s) {
   for (const a of s.actions) {
     const p = s.players[a.pid]; if (!p || !p.alive) continue;
-    if (a.type === 'skill') { useSkill(s, p, a.targets); continue; }
+    if (a.type === 'skill') { useSkill(s, p, a.targets, a.radius, a.focus); continue; }
     if (a.type === 'choose' && p.choices && p.choices[a.index]) {
       applyChoice(s, p, p.choices[a.index]);
       p.pendingLevels = Math.max(0, p.pendingLevels - 1);
@@ -1497,6 +1676,7 @@ function update(s, inputs, dt) {
   if (s.phase !== 'playing') return;
   processActions(s);
   if (s.cine) { s.cine.t += dt; if (s.cine.t >= s.cine.dur) finishCine(s); return; }  // 각성 스킬 연출 중: 세상이 멈춤
+  if (s.blizz && s.blizz.t < ASCEND.frostGeneral.skill.intro) { s.blizz.t += dt; return; }  // 빙하기 시작: 눈보라가 몰아치는 동안 멈춤
   if (CONFIG.PAUSE_ON_LEVELUP) { for (const id in s.players) if (s.players[id].alive && s.players[id].choices) return; }
 
   s.tick++;
@@ -1523,7 +1703,7 @@ function update(s, inputs, dt) {
     }
   } else if (s.final.phase === 'intro') {  // 등장 연출: 모두 멈춤
     s.final.t -= dt;
-    if (s.final.t <= 0) { s.final.phase = 'fight'; const b = s.enemies.find(e => e.raid); if (b) { b.raid.st = 'chase'; b.raid.t = 0; } }
+    if (s.final.t <= 0) { s.final.phase = 'fight'; s.final.fightTick = s.tick; const b = s.enemies.find(e => e.raid); if (b) { b.raid.st = 'chase'; b.raid.t = 0; } }
     return;
   } else if (s.final.phase === 'dying') {  // 쓰러지는 연출: 보스와 캐릭터만 남고 멈춤
     s.final.t -= dt;
@@ -1551,6 +1731,7 @@ function update(s, inputs, dt) {
   updateEnemies(s, players, dt);
   for (const p of players) if (p.alive) updateMelee(s, p, dt, inputs[p.id]);
   updateProjectiles(s, dt);
+  if (s.blizz) updateBlizzard(s, dt);
   if (s.final && s.final.phase === 'fight') updateRaid(s, dt);
   s.enemies = s.enemies.filter(e => !e.dead);
   updatePickups(s, players.filter(p => p.alive), dt);
@@ -1559,11 +1740,61 @@ function update(s, inputs, dt) {
   if (!alivePlayers(s).length) { s.phase = 'defeat'; emit(s, { t: 'end', result: 'defeat' }); }
 }
 
-let ASCEND_ICON = null;
-function ascendIcon() { if (!ASCEND_ICON) { const c = document.createElement('canvas'); c.width = c.height = 32; KNIGHT.icon(c.getContext('2d'), 0.4); ASCEND_ICON = c.toDataURL(); } return ASCEND_ICON; }
+const JUDGE_SPEAR = (() => {
+  function spear(g, x, y, ang, len, scale = 1, hide, thick = 1) {  // 회전 없이 방향을 따라 한 칸씩 찍음 (선명한 도트). hide(u): 몸 속에 가려지는 구간
+    const dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx, L = len * scale;
+    const put = (u, v, c) => { if (hide && hide(u)) return; g.fillStyle = c; g.fillRect(Math.round(x + dx * u + nx * v), Math.round(y + dy * u + ny * v), 1, 1); };
+    const prong = Math.max(7, Math.round(L * 0.3)), shaft = L - prong, spread = Math.max(2, Math.round(prong * 0.2));
+    for (let u = 0; u < shaft; u += 0.5) { for (let w = 0; w < thick; w++) put(u, -w, w === thick - 1 && thick > 1 ? '#ff6a5a' : Math.floor(u) % 5 === 0 ? '#ff5a4a' : '#c8141e'); put(u, 1, '#4a050a'); }
+    for (let u = 0; u <= prong; u += 0.5) {
+      const k = u / prong, off = Math.sin(Math.min(1, k * 1.15) * Math.PI) * spread;
+      put(shaft + u, -off, '#ff3a3a'); put(shaft + u, -off - 0.6, k < 0.8 ? '#ff9a8a' : '#ff3a3a');
+      put(shaft + u, off + 1, '#b00e18'); put(shaft + u, off + 1.6, '#5a060c');
+    }
+    put(L + 0.5, 0.5, '#ffe0d8');
+  }
+  return spear;
+})();
+const JUDGE_ICON = (() => {
+  const spear = JUDGE_SPEAR;
+  function icon(g, t) {
+    g.fillStyle = '#12060a'; g.fillRect(0, 0, 32, 32);
+    const gr = g.createRadialGradient(18, 13, 1, 18, 13, 18); gr.addColorStop(0, 'rgba(255,60,60,0.45)'); gr.addColorStop(1, 'rgba(30,0,6,0)'); g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+    spear(g, 3, 29, -Math.PI / 4, 33, 1);
+    if (Math.sin(t * 4) > 0) { g.fillStyle = '#ffffff'; g.fillRect(25, 5, 1, 1); }
+    g.strokeStyle = '#ff4a4a'; g.lineWidth = 1; g.strokeRect(0.5, 0.5, 31, 31);
+  }
+  return icon;
+})();
+const GENERAL_ICON = (() => {
+  function icon(g, t) {
+    g.fillStyle = '#0c1a2a'; g.fillRect(0, 0, 32, 32);
+    const gr = g.createRadialGradient(16, 14, 2, 16, 14, 18); gr.addColorStop(0, 'rgba(150,230,255,0.5)'); gr.addColorStop(1, 'rgba(10,30,50,0)'); g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+    const px = (a, b, c) => { g.fillStyle = c; g.fillRect(a, b, 1, 1); };
+    // 넓은 얼음 칼날: 축을 따라 각진 결정면 (왼쪽 면 밝게, 오른쪽 면 어둡게, 가운데 능선 하얗게)
+    const ax = Math.SQRT1_2, ay = -Math.SQRT1_2, bx0 = 9.5, by0 = 22.5, Lb = 20;
+    for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
+      const dx = x + 0.5 - bx0, dy = y + 0.5 - by0, u = dx * ax + dy * ay, v = -dx * ay + dy * ax;
+      if (u < 0.5 || u > Lb + 3) continue;
+      const step = Math.floor(u / 4), wv = u > Lb ? (Lb + 3 - u) * 1.3 : 3.6 - (step % 2) * 0.5 - u * 0.04;  // 톱니처럼 깎인 결정 가장자리
+      if (Math.abs(v) > wv) continue;
+      const col = Math.abs(v) < 0.7 ? '#ffffff' : v < 0 ? (step % 2 ? '#bff2ff' : '#d8f8ff') : (step % 2 ? '#5ab8e0' : '#7fd0ef');
+      px(x, y, col);
+    }
+    for (let k = -4; k <= 4; k++) { px(8 + k, 24 + k, '#ffcc4d'); px(9 + k, 24 + k, '#c89030'); }  // 코등이
+    for (let i = 0; i < 5; i++) { px(7 - i, 25 + i, '#6a4a30'); px(6 - i, 25 + i, '#3a2818'); }  // 긴 손잡이
+    px(2, 30, '#ffcc4d'); px(1, 30, '#c89030');
+    for (let i = 0; i < 7; i++) { const a = t * 1.5 + i * 0.9, r = 9 + (i % 3) * 3; px(Math.round(16 + Math.cos(a) * r), Math.round(14 + Math.sin(a) * r * 0.7), i % 2 ? '#ffffff' : '#bff2ff'); }  // 서리 입자
+    g.strokeStyle = '#9ee8ff'; g.lineWidth = 1; g.strokeRect(0.5, 0.5, 31, 31);
+  }
+  return icon;
+})();
+const ASCEND_ICONS = {};
+const ascendIconFn = k => k === 'frostGeneral' ? GENERAL_ICON : k === 'judge' ? JUDGE_ICON : KNIGHT.icon;
+function ascendIcon(k) { if (!ASCEND_ICONS[k]) { const c = document.createElement('canvas'); c.width = c.height = 32; ascendIconFn(k)(c.getContext('2d'), 0.4); ASCEND_ICONS[k] = c.toDataURL(); } return ASCEND_ICONS[k]; }
 function choiceLabel(c, p) {
-  if (c.kind === 'ascend') { const A = ASCEND[c.key]; return { title: `[ ${A.name} ]`, name: `[ ${A.name} ]`, glyph: '', img: ascendIcon(), color: '#2a0a0e', tag: '각성', desc: A.desc }; }
-  if (c.kind === 'ascendSkill') { const A = ASCEND[c.key]; return { title: A.skill.name, name: A.skill.name, glyph: '', img: ascendIcon(), color: '#2a0a0e', tag: '각성 스킬', desc: A.skill.desc }; }
+  if (c.kind === 'ascend') { const A = ASCEND[c.key]; return { title: `[ ${A.name} ]`, name: `[ ${A.name} ]`, glyph: '', img: ascendIcon(c.key), color: '#2a0a0e', tag: '각성', desc: A.desc }; }
+  if (c.kind === 'ascendSkill') { const A = ASCEND[c.key]; return { title: A.skill.name, name: A.skill.name, glyph: '', img: ascendIcon(c.key), color: '#2a0a0e', tag: '각성 스킬', desc: A.skill.desc }; }
   if (c.kind === 'element') {
     const E = ELEMENTS[c.key];
     return { title: `${E.glyph} ${E.name} 원소`, name: `${E.name} 원소`, glyph: E.glyph, color: E.color, tag: '원소 부여 마법서', desc: E.desc };
@@ -1677,6 +1908,92 @@ function buildSprites() {
   S.knight = {
     front: [fromRows([...kFront, ...kLegsA], KP, { flip: true }), fromRows([...kFront, ...kLegsB], KP, { flip: true })],
     back: [fromRows([...kBack, ...kLegsA], KP, { flip: true }), fromRows([...kBack, ...kLegsB], KP, { flip: true })],
+  };
+  // 혹한의 장군 (각성 외형): 얼어붙은 성기사 판금, 금빛 십자 겉옷
+  const GP = {
+    I: '#e8faff', i: '#9ee8ff', j: '#5ab8e0',            // 얼음 결정
+    H: '#c8d2e0', h: '#eef4fa', s: '#8a96aa', k: '#3e4658', d: '#5a6478',  // 판금 (밝음 → 어두움)
+    E: '#d8fbff', e: '#7fe0ff',                         // 눈빛
+    g: '#a08a52', Y: '#e0c878',                         // 바랜 금장
+    C: '#2c3a5c', c: '#425684', f: '#cfefff',          // 얼어붙은 망토 + 서리
+  };
+  const gFront = [
+    '......Ii......',
+    '.....IiiI.....',
+    '....hHHHHs....',
+    '...hHHssssk...',
+    '...HdkkkkdH...',
+    '...HkEeeEkH...',
+    '...HskkkksH...',
+    '...fHsffsHf...',
+    '.ifHHcYYcHHfi.',
+    'IhHHsYYYYsHHhI',
+    '.HfscsYYscsfH.',
+    '.Hs.ccYYcc.sH.',
+    '.dk.cfYYfc.kd.',
+    '..f.cccccc.f..',
+  ];
+  const gBack = [
+    '......Ii......',
+    '.....IiiI.....',
+    '....hHHHHs....',
+    '...hHHssssk...',
+    '...HHsssssH...',
+    '...HsssssskH..'.slice(0, 14),
+    '...HssssskH...',
+    '...fHsssssf...',
+    '.ihHCCCCCCHhi.',
+    'IhHCcccccCCHhI',
+    '.HsCcccfcCCsH.',
+    '.Hs.CcfccC.sH.',
+    '.dk.CccccC.kd.',
+    '..f.CfCfCf.f..',
+  ];
+  const gLegsA = ['....ss..sd....', '....kd..kd....', '...fkk..kkf...'];
+  const gLegsB = ['.....ssdd.....', '....kd.kd.....', '...fkk.kkf....'];
+  S.general = {
+    front: [fromRows([...gFront, ...gLegsA], GP, { flip: true }), fromRows([...gFront, ...gLegsB], GP, { flip: true })],
+    back: [fromRows([...gBack, ...gLegsA], GP, { flip: true }), fromRows([...gBack, ...gLegsB], GP, { flip: true })],
+  };
+  // 심판자 (각성 외형): 흰 전신 슈트 + 옅은 하늘색 포인트
+  const JP = { W: '#f6f9fc', w: '#d6dee8', g: '#9aa6b8', k: '#3a4252', b: '#a8e2ff', B: '#5cb6e8', v: '#7fe4ff', V: '#effcff' };
+  const jFront = [
+    '.....wWWw.....',
+    '....wWWWWw....',
+    '...wWWWWWWg...',
+    '...WvvvvvvW...',
+    '...WVvvvvvg...',
+    '...wWWWWWWg...',
+    '....wWWWWg....',
+    '..wWWbWWbWWg..',
+    '.wWWWWbbWWWWg.',
+    '.WWwWWbbWWwWg.',
+    '.Ww.WWWWWW.wg.',
+    '.Wg.BbBBbB.gg.',
+    '.W..WWWWWg..g.',
+    '....WWWWWW....',
+  ];
+  const jBack = [
+    '.....wWWw.....',
+    '....wWWWWw....',
+    '...wWWWWWWg...',
+    '...WWWWWWWW...',
+    '...WWWWWWWg...',
+    '...wWWWWWWg...',
+    '....wWbWWg....',
+    '..wWWWbWWWWg..',
+    '.wWWWWbWWWWWg.',
+    '.WWwWWbWWWwWg.',
+    '.Ww.WWbWWW.wg.',
+    '.Wg.BbBBbB.gg.',
+    '.W..WWWWWg..g.',
+    '....WWWWWW....',
+  ];
+  const jLegsA = ['....WW..Wg....', '....bW..Wb....', '...wWw..wWw...'];
+  const jLegsB = ['.....WWWg.....', '....bW.Wb.....', '...wWw.wWw....'];
+  S.judge = {
+    front: [fromRows([...jFront, ...jLegsA], JP, { flip: true }), fromRows([...jFront, ...jLegsB], JP, { flip: true })],
+    back: [fromRows([...jBack, ...jLegsA], JP, { flip: true }), fromRows([...jBack, ...jLegsB], JP, { flip: true })],
   };
   S.moth = [0, 1].map(k => makeSprite(11, 8, px => {
     const wy = k ? 4.6 : 3, ry = k ? 2.2 : 3;
@@ -2369,7 +2686,18 @@ function createRenderer(canvas) {
         case 'bind': v.vines.push({ pid: ev.pid, pts: ev.pts, life: 1.2, max: 1.2 }); v.shake = Math.max(v.shake, 5); break;
         case 'sprout': for (let i = 0; i < 30 && v.particles.length < 440; i++) { const a = Math.random() * 6.28, sp = 40 + Math.random() * 120; v.particles.push({ x: ev.x, y: ev.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, z: 20, vz: 40, g: 40, tw: true, life: 1, max: 1, c: i & 1 ? '#9be36f' : '#a06ad8', size: 1 }); } break;
         case 'ash': for (let i = 0; i < 6 && v.particles.length < 440; i++) { const a = Math.random() * 6.28, sp = 20 + Math.random() * 50; v.particles.push({ x: ev.x, y: ev.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, z: 6, vz: 30 + Math.random() * 40, g: -20, life: 0.9, max: 0.9, c: i % 2 ? '#5a4a44' : '#ff7a1a', size: 1 }); } break;
-        case 'cineEnd': v.ashFall = 1.5; v.shake = Math.max(v.shake, 6); break;
+        case 'cineEnd': if (!(s.cine)) { v.ashFall = s.lastCineKind === 'judge' ? 0 : 1.5; } v.shake = Math.max(v.shake, 6); break;
+        case 'smite': for (let i = 0; i < 6 && v.particles.length < 440; i++) { v.particles.push({ x: ev.x + (Math.random() - 0.5) * 8, y: ev.y + (Math.random() - 0.5) * 4, vx: 0, vy: 0, z: 2 + Math.random() * 6, vz: 50 + Math.random() * 60, g: -20, tw: true, life: 0.8, max: 0.8, c: i % 2 ? '#fff4c0' : '#ffffff', size: 1 }); } break;
+        case 'blizzStart': v.flash = -0.25; v.shake = Math.max(v.shake, 4); break;
+        case 'bossFreeze': v.shake = Math.max(v.shake, 6); v.rings.push({ x: ev.x, y: ev.y, r: 10, to: 70, life: 0.5, max: 0.5, c: '#e6fbff', thick: 2 }); break;
+        case 'frostBreak': {  // 얼음 파괴!
+          v.shake = Math.max(v.shake, 12); v.flash = -0.35;
+          v.flares.push({ x: ev.x, y: ev.y, life: 0.3, max: 0.3 });
+          v.rings.push({ x: ev.x, y: ev.y, r: 10, to: 120, life: 0.5, max: 0.5, c: '#e6fbff', thick: 3 });
+          for (let i = 0; i < 40 && v.shards.length < 200; i++) { const a = Math.random() * Math.PI * 2, sp = 90 + Math.random() * 200; v.shards.push({ x: ev.x, y: ev.y, z: 20 + Math.random() * 60, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, vz: 60 + Math.random() * 120, ang: Math.random() * 6.28, va: (Math.random() - 0.5) * 30, len: 3 + Math.random() * 4, life: 0.9 + Math.random() * 0.4, max: 1.3, c: i % 3 ? '#e6fbff' : '#7ce8ff' }); }
+          v.texts.push({ x: ev.x, y: ev.y - 90, text: '얼음 파괴!', c: '#9ee8ff', life: 1.6, max: 1.6, rise: 18, big: true });
+          break;
+        }
         case 'ascend': v.flash = -0.5; v.shake = Math.max(v.shake, 8); { const p = s.players[ev.pid]; if (p) for (let i = 0; i < 50 && v.particles.length < 440; i++) { const a = Math.random() * 6.28, sp = 40 + Math.random() * 140; v.particles.push({ x: p.x, y: p.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, z: 10, vz: 60 + Math.random() * 90, g: 120, life: 1, max: 1, c: i % 3 ? '#ff8a2a' : '#fff0a0', size: Math.random() < 0.4 ? 2 : 1 }); } } break;
         case 'skillReady': v.skillPulse = 1.2; break;
         case 'tired': v.texts.push({ x: ev.x, y: ev.y - 60, text: '지쳤다!', c: '#ffd27a', life: 1.4, max: 1.4, rise: 16 }); break;
@@ -2550,7 +2878,8 @@ function createRenderer(canvas) {
     return P;
   }
   function drawAbru(e, t, lights) {
-    const P = abruPose(e, t); paintAbru(P, t, e.flash > 0 && !(e.raid && e.raid.st === 'dying'));
+    const P = abruPose(e, t); if (e.iceLock) { P.eye = 0.35; P.walk = 0; } paintAbru(P, t, e.flash > 0 && !(e.raid && e.raid.st === 'dying'));
+    if (e.iceLock) { AG.globalCompositeOperation = 'source-atop'; AG.fillStyle = 'rgba(170, 225, 255, 0.55)'; AG.fillRect(0, 0, ABRU_CV.width, ABRU_CV.height); AG.globalCompositeOperation = 'source-over'; }
     const sx = SX(e.x, e.y), sy = SY(e.x, e.y), R = e.raid;
     const flip = Math.cos(R ? R.face - Math.PI / 4 : 0) < 0;  // 화면 기준 왼쪽을 보면 좌우 반전
     L.save(); L.translate(sx, sy);
@@ -2639,6 +2968,183 @@ function createRenderer(canvas) {
     L.fillStyle = p.hp / p.maxHp > 0.35 ? '#6fe3c4' : '#ef5a6f'; L.fillRect(bx, by, Math.max(0, Math.round(bw * p.hp / p.maxHp)), 2);
   }
 
+  /* ---- 각성: 혹한의 장군 외형 ---- */
+  function iceBlade(x, y, t, len, ang) {  // 얼음에 감싸인 대검
+    L.save(); L.translate(x, y); L.rotate(ang);
+    const px = (a, b, c) => { L.fillStyle = c; L.fillRect(a, b, 1, 1); };
+    px(0, 1, '#6a4a30'); px(0, 2, '#6a4a30'); px(0, 3, '#3a2818'); for (let k = -2; k <= 2; k++) px(k, 0, '#ffcc4d');
+    for (let i = 1; i <= len; i++) { px(0, -i, i % 3 === 0 ? '#ffffff' : '#bff2ff'); if (i < len - 2) { px(-1, -i, '#5ab8e0'); px(1, -i, '#9ee8ff'); } }
+    if (Math.sin(t * 3) > 0.6) px(1, -len + 2, '#ffffff');
+    L.restore();
+  }
+  function drawGeneralPlayer(p, t, sx, sy) {
+    const swinging = p.atk && p.atk.swingT > 0, spinning = p.atk && p.atk.spinT > 0;
+    const th = spinning ? (t * Math.PI * 2) / (p.stats.whirlRot || EVO.whirlRot) : 0;
+    const fx = spinning ? Math.cos(th) : swinging ? p.ax : p.fx, fy = spinning ? Math.sin(th) : swinging ? p.ay : p.fy, sfx = fx - fy, sfy = fx + fy;
+    const back = sfy < -0.35, flip = sfx < -0.05, frame = p.moving ? Math.floor(t * 8) % 2 : 0, bob = frame;
+    const spr = (back ? SPR.general.back : SPR.general.front)[frame], left = sx - (spr.w >> 1), top = sy - bob - spr.h + 1;
+    if (p.invuln > 0 && Math.floor(t * 24) % 2 === 0) L.globalAlpha = 0.5;
+    const blade = () => { if (!swinging && !spinning) iceBlade(flip ? left + spr.w - 2 : left + 1, top + 12, t, 12, flip ? 0.4 : -0.4); };
+    if (back) blade();
+    blit(spr, sx, sy - bob, flip);
+    if (!back) blade();
+    L.globalAlpha = 1;
+    // 입김
+    for (let i = 0; i < 4; i++) { const q = (t * 0.7 + i * 0.25) % 1; L.globalAlpha = (1 - q) * 0.6; L.fillStyle = '#eef8ff'; L.fillRect(Math.round(sx + (flip ? -3 : 3) + (flip ? -q : q) * 6), Math.round(top + 5 - q * 5), 1, 1); }
+    L.globalAlpha = 1;
+    if (p.moving && Math.random() < 0.15 && v.particles.length < 420) v.particles.push({ x: p.x, y: p.y, vx: 0, vy: 0, z: 0, vz: 0, g: 0, life: 0.8, max: 0.8, c: '#dff6ff', size: 2 });  // 서리 발자국
+    p._lantern = [left + (flip ? 2 : spr.w - 3), top + 11];
+    const bw = 14, bx = sx - 7, by = sy + 3;
+    L.fillStyle = OUTLINE; L.fillRect(bx - 1, by - 1, bw + 2, 4);
+    L.fillStyle = p.hp / p.maxHp > 0.35 ? '#6fe3c4' : '#ef5a6f'; L.fillRect(bx, by, Math.max(0, Math.round(bw * p.hp / p.maxHp)), 2);
+  }
+  // 보스용 얼음 결정: 불규칙하게 깎인 다각형 타원
+  const crnd = (i, k = 1) => { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };
+  const CRYSTAL = Array.from({ length: 11 }, (_, i) => { const a = (i / 11) * Math.PI * 2 + (crnd(i, 3) - 0.5) * 0.35; return [a, 0.84 + crnd(i, 4) * 0.24]; });
+  function drawCrystal(cx, cy, rx, ry, crack) {
+    const pts = CRYSTAL.map(([a, k]) => [cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]), core = [cx - rx * 0.12, cy - ry * 0.18];
+    pts.forEach((p, i) => { const q = pts[(i + 1) % pts.length], mid = Math.atan2((p[1] + q[1]) / 2 - cy, (p[0] + q[0]) / 2 - cx), lit = 0.5 + 0.5 * Math.cos(mid + 2.4);
+      L.fillStyle = `rgba(${140 + lit * 110 | 0}, ${210 + lit * 45 | 0}, 255, ${0.16 + lit * 0.26})`; L.beginPath(); L.moveTo(core[0], core[1]); L.lineTo(p[0], p[1]); L.lineTo(q[0], q[1]); L.closePath(); L.fill(); });
+    L.strokeStyle = 'rgba(235, 252, 255, 0.35)'; L.lineWidth = 1; pts.forEach(p => { L.beginPath(); L.moveTo(core[0], core[1]); L.lineTo(p[0], p[1]); L.stroke(); });
+    L.strokeStyle = '#e8faff'; L.lineWidth = 1.5; L.beginPath(); pts.forEach((p, i) => i ? L.lineTo(p[0], p[1]) : L.moveTo(p[0], p[1])); L.closePath(); L.stroke();
+    L.fillStyle = '#ffffff'; L.fillRect(Math.round(cx - rx * 0.5), Math.round(cy - ry * 0.55), 2, 6);
+    if (crack > 0) { L.strokeStyle = '#ffffff'; L.lineWidth = 1; for (let i = 0; i < 7; i++) { const a = crand(i, 7) * 6.28, l = crack * (rx * 0.6 + crand(i, 8) * rx * 0.5); L.beginPath(); L.moveTo(cx, cy); L.lineTo(cx + Math.cos(a) * l * 0.5 + 2, cy + Math.sin(a) * l * 0.5); L.lineTo(cx + Math.cos(a) * l, cy + Math.sin(a) * l * 1.2); L.stroke(); } }
+  }
+  function drawFrozenBoss(s, e, t) {  // 얼어붙은 보스: 몸은 푸르게 질리고 결정 + 얼음 내구도
+    const sx = SX(e.x, e.y), sy = SY(e.x, e.y), B = s.blizz, A = ASCEND.frostGeneral.skill;
+    const prog = B && B.bossId === e.id ? Math.min(1, B.dealt / (e.maxHp * A.breakPct)) : 0;
+    drawCrystal(sx, sy - 36, 40, 50, prog > 0.75 ? (prog - 0.75) * 4 : 0);
+    const bw = 50, bx = sx - 25, by = sy - 96;
+    L.fillStyle = OUTLINE; L.fillRect(bx - 1, by - 1, bw + 2, 5); L.fillStyle = '#1a2a3a'; L.fillRect(bx, by, bw, 3); L.fillStyle = '#9ee8ff'; L.fillRect(bx, by, Math.round(bw * (1 - prog)), 3);
+  }
+
+  /* ---- 빙하기: 눈보라 층 (게임보다 잘게 그린 별도 층) ---- */
+  const BLZ = document.createElement('canvas'), BG = BLZ.getContext('2d');
+  function drawBlizzard(s, t) {
+    const B = s.blizz, A = ASCEND.frostGeneral.skill;
+    if (B) v.blizzFade = 1; else if (v.blizzFade > 0) v.blizzFade = Math.max(0, v.blizzFade - 1 / 40); else return false;
+    const CS = 2.4, bw = Math.round(v.w / CS), bh = Math.round(v.h / CS);
+    if (BLZ.width !== bw || BLZ.height !== bh) { BLZ.width = bw; BLZ.height = bh; }
+    const g = BG; g.clearRect(0, 0, bw, bh);
+    const bt = B ? B.t : 99, fade = v.blizzFade, k = bt < A.intro ? Math.min(1, bt / A.intro) : 1;
+    g.fillStyle = `rgba(200, 230, 245, ${(0.22 + 0.08 * Math.sin(t * 3)) * fade * k})`; g.fillRect(0, 0, bw, bh);  // 하얗게 흐려지는 시야
+    if (bt < A.intro) { const wx = -60 + k * (bw + 120), gr = g.createLinearGradient(wx - 90, 0, wx + 20, 0); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.7, 'rgba(240,250,255,0.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(wx - 90, 0, 110, bh); }  // 몰아쳐 들어오는 눈보라 벽
+    g.globalAlpha = fade;
+    for (let layer = 0; layer < 3; layer++) {  // 사선 눈발 3겹
+      const n = Math.round((60 + layer * 70) * (0.5 + k * 0.7) * bw / 420), sp = 260 + layer * 160, len = 3 + layer * 3;
+      g.strokeStyle = layer === 2 ? 'rgba(255,255,255,0.9)' : layer === 1 ? 'rgba(230,248,255,0.7)' : 'rgba(200,235,255,0.5)'; g.lineWidth = layer === 2 ? 1.5 : 1;
+      g.beginPath();
+      for (let i = 0; i < n; i++) { const x = ((crand(i, 20 + layer) * (bw + 80) + t * sp) % (bw + 80)) - 40, y = ((crand(i, 30 + layer) * (bh + 40) + t * sp * 0.35) % (bh + 40)) - 20; g.moveTo(x, y); g.lineTo(x - len, y - len * 0.35); }
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+    const vg = g.createRadialGradient(bw / 2, bh / 2, bh * 0.25, bw / 2, bh / 2, Math.max(bw, bh) * 0.7); vg.addColorStop(0, 'rgba(255,255,255,0)'); vg.addColorStop(1, `rgba(235,248,255,${0.55 * fade * k})`); g.fillStyle = vg; g.fillRect(0, 0, bw, bh);  // 가장자리 성에
+    return true;
+  }
+  /* ---- 각성: 심판자 외형 ---- */
+  function drawJudgePlayer(p, t, sx, sy) {
+    const swinging = p.atk && (p.atk.swingT > 0 || p.atk.thrustT > 0);
+    const fx = swinging && p.ax !== undefined ? p.ax : p.fx, fy = swinging && p.ay !== undefined ? p.ay : p.fy, sfx = fx - fy, sfy = fx + fy;
+    const back = sfy < -0.35, flip = sfx < -0.05, frame = p.moving ? Math.floor(t * 8) % 2 : 0, bob = frame;
+    const spr = (back ? SPR.judge.back : SPR.judge.front)[frame], left = sx - (spr.w >> 1), top = sy - bob - spr.h + 1;
+    if (p.invuln > 0 && Math.floor(t * 24) % 2 === 0) L.globalAlpha = 0.5;
+    const hold = () => { if (!swinging) JUDGE_SPEAR(L, flip ? left + spr.w - 3 : left + 2, top + 16, flip ? -1.9 : -1.25, 16); };
+    if (back) hold();
+    blit(spr, sx, sy - bob, flip);
+    if (!back) hold();
+    L.globalAlpha = 1;
+    p._lantern = [left + (flip ? 2 : spr.w - 3), top + 11];
+    const bw = 14, bx = sx - 7, by = sy + 3;
+    L.fillStyle = OUTLINE; L.fillRect(bx - 1, by - 1, bw + 2, 4);
+    L.fillStyle = p.hp / p.maxHp > 0.35 ? '#6fe3c4' : '#ef5a6f'; L.fillRect(bx, by, Math.max(0, Math.round(bw * p.hp / p.maxHp)), 2);
+  }
+  /* ---- 롱기누스의 창 연출 (게임 멈춤) ---- */
+  const jEase = k => k * k * (3 - 2 * k), jc = k => Math.max(0, Math.min(1, k));
+  function judgeFocus(s) { const c = s.cine; return c && c.kind === 'judge' ? s.enemies.find(e => e.id === c.focus) : null; }
+  function judgeZoom(sk) { const zk = sk >= 0.4 && sk < 3.3 ? jEase(jc((sk - 0.4) / 0.6)) : 0, punch = sk >= 1.25 && sk < 1.5 ? Math.sin(jc((sk - 1.25) / 0.25) * Math.PI) * 0.18 : 0; return 1 + zk * 0.8 + punch; }
+  function judgeHit(f) { const big = !!f.raid, rec = big && v.jRecoil ? v.jRecoil : 0; return { x: SX(f.x, f.y) + rec, y: SY(f.x, f.y) - (big ? 34 : 6) - rec * 0.3, body: big ? 13 : 5, out: big ? 14 : 8, len: big ? 104 : 64 }; }
+  function drawJudgeWorld(s, t) {  // 저해상도 월드 위에: 암전(대상만 남김) → 창 → 파편 / 암흑에서 밝아지며 빛기둥·십자가
+    const c = s.cine; if (!c || c.kind !== 'judge') return;
+    const f = judgeFocus(s), sk = c.t, bw = v.bw, bh = v.bh;
+    if (!f) return;
+    if (sk >= 1.25 && sk < 1.3 && v.shake < 10) v.shake = 14;
+    v.jRecoil = f.raid && sk >= 1.25 && sk < 3.3 ? 5 * Math.exp(-(sk - 1.25) * 6) * Math.cos((sk - 1.25) * 30) + 2 : 0;
+    if (sk < 3.3) {
+      const dark = jc(sk / 0.4);
+      L.fillStyle = `rgba(4, 4, 8, ${0.82 * dark})`; L.fillRect(0, 0, bw, bh);
+      // 대상만 원래 밝기로 다시 그림 (꽂히는 순간 하얗게 번쩍)
+      if (f.raid) { const keep = f.flash; f.flash = sk >= 1.25 && sk < 1.33 ? 1 : 0; L.save(); L.translate(v.jRecoil, -v.jRecoil * 0.3); drawAbru(f, t, []); L.restore(); f.flash = keep; } else drawEnemy(f, t);
+      const H = judgeHit(f), ang = Math.atan2(70, 160);
+      if (sk >= 0.95) {
+        const k = jc((sk - 0.95) / 0.3), travel = 320 * (1 - k * k * k) - (H.body + H.out);
+        const quiver = k >= 1 ? Math.sin((sk - 1.25) * 70) * 2.2 * Math.exp(-(sk - 1.25) * 5) : 0, a2 = ang + quiver * 0.012;
+        const tipX = H.x - Math.cos(a2) * travel, tipY = H.y - Math.sin(a2) * travel, bx = tipX - Math.cos(a2) * H.len, by = tipY - Math.sin(a2) * H.len;
+        if (k < 1) { for (let i = 1; i <= 6; i++) { L.globalAlpha = 0.5 - i * 0.07; L.strokeStyle = i % 2 ? '#ff4a4a' : '#ffd0c8'; L.lineWidth = 1; L.beginPath(); L.moveTo(bx - Math.cos(ang) * i * 14, by - Math.sin(ang) * i * 14 + (i % 3 - 1) * 2); L.lineTo(bx, by); L.stroke(); } L.globalAlpha = 1; }
+        JUDGE_SPEAR(L, bx, by, a2, H.len, 1, u => k >= 1 && u > H.len - H.out - H.body * 2 && u < H.len - H.out, 2);
+        if (k >= 1) {
+          const ht = sk - 1.25;
+          if (ht < 0.12) { L.globalCompositeOperation = 'lighter'; L.fillStyle = `rgba(255, 240, 230, ${1 - ht / 0.12})`; L.beginPath(); L.arc(H.x, H.y, 18 + ht * 120, 0, 7); L.fill(); L.globalCompositeOperation = 'source-over'; }
+          if (ht < 0.35) { for (const [d, col] of [[0, '#ffffff'], [0.07, '#ff4a4a']]) { const q = jc((ht - d) / 0.28); if (q <= 0) continue; L.strokeStyle = col; L.globalAlpha = 1 - q; L.lineWidth = 2; L.beginPath(); L.ellipse(H.x, H.y, 6 + q * 46, 4 + q * 26, ang, 0, 7); L.stroke(); } L.globalAlpha = 1; }
+          if (ht < 0.5) { for (let i = 0; i < 22; i++) { const sp = 40 + crand(i, 61) * 140, a = ang + (crand(i, 62) - 0.5) * 1.4; L.globalAlpha = 1 - ht / 0.5; L.fillStyle = i % 3 === 0 ? '#ff3a3a' : i % 3 === 1 ? '#6b4b33' : '#a06ad8'; L.fillRect((H.x + Math.cos(a) * sp * ht) | 0, (H.y + Math.sin(a) * sp * ht + 60 * ht * ht) | 0, i % 4 ? 1 : 2, i % 4 ? 1 : 2); } L.globalAlpha = 1; }
+          if (sk < 2.0) { const pulse = 0.5 + 0.5 * Math.sin((sk - 1.25) * 18); L.fillStyle = `rgba(255, 40, 40, ${0.25 + pulse * 0.35})`; L.beginPath(); L.arc(H.x, H.y, 3 + pulse * 3, 0, 7); L.fill(); }
+        }
+      }
+      return;
+    }
+    // 3.3초~: 암흑에서 서서히 밝아짐 → 빛기둥 (최종 보스만 끝이 뾰족한 초록 십자가)
+    if (sk < 4.1) { L.fillStyle = `rgba(0, 0, 0, ${1 - jEase(jc((sk - 3.3) / 0.8))})`; L.fillRect(0, 0, bw, bh); }
+    const k = jc((sk - 3.3) / 0.45), fadeOut = sk > 4.3 ? jc((4.8 - sk) / 0.5) : 1, ids = new Set(c.targets), A = ASCEND.judge;
+    L.globalCompositeOperation = 'lighter';
+    for (const e of s.enemies) {
+      if (!ids.has(e.id) || e.raid) continue;
+      const sx = SX(e.x, e.y), sy = SY(e.x, e.y), h = 34 * jEase(k), w = 3 + (1 - k) * 4;
+      const gr = L.createLinearGradient(sx - w, 0, sx + w, 0); gr.addColorStop(0, 'rgba(255,220,120,0)'); gr.addColorStop(0.5, `rgba(255,250,220,${0.9 * fadeOut})`); gr.addColorStop(1, 'rgba(255,220,120,0)');
+      L.fillStyle = gr; L.fillRect(sx - w, sy - h, w * 2, h);
+      const tg = L.createLinearGradient(0, sy - h - 10, 0, sy - h); tg.addColorStop(0, 'rgba(255,240,200,0)'); tg.addColorStop(1, `rgba(255,240,200,${0.7 * fadeOut})`); L.fillStyle = tg; L.fillRect(sx - w * 0.6, sy - h - 10, w * 1.2, 10);
+    }
+    const boss = s.enemies.find(e => e.raid && ids.has(e.id) && !e.untargetable);
+    if (boss) {
+      const bx = SX(boss.x, boss.y), by = SY(boss.x, boss.y), full = Math.min(by - 10, 120), H = full * jEase(k), armK = jEase(jc((sk - 3.75) / 0.25)), cy = by - full * 0.75, arm = armK * 38;
+      const cross = (w, tip) => {
+        L.beginPath(); const top = by - H;
+        L.moveTo(bx, top - tip); L.lineTo(bx + w, top + tip * 0.2);
+        if (arm > 0) { L.lineTo(bx + w, cy - w); L.lineTo(bx + arm, cy - w * 0.6); L.lineTo(bx + arm + tip, cy); L.lineTo(bx + arm, cy + w * 0.6); L.lineTo(bx + w, cy + w); }
+        L.lineTo(bx + w, by); L.lineTo(bx - w, by);
+        if (arm > 0) { L.lineTo(bx - w, cy + w); L.lineTo(bx - arm, cy + w * 0.6); L.lineTo(bx - arm - tip, cy); L.lineTo(bx - arm, cy - w * 0.6); L.lineTo(bx - w, cy - w); }
+        L.lineTo(bx - w, top + tip * 0.2); L.closePath();
+      };
+      cross(13, 18); L.fillStyle = `rgba(40, 255, 130, ${0.28 * fadeOut})`; L.fill();
+      cross(7, 14); L.fillStyle = `rgba(90, 255, 160, ${0.75 * fadeOut})`; L.fill();
+      cross(3, 9); L.fillStyle = `rgba(235, 255, 240, ${fadeOut})`; L.fill();
+    }
+    L.globalCompositeOperation = 'source-over';
+    if (sk >= 3.6) for (const e of s.enemies) {  // 피해 숫자
+      if (!ids.has(e.id) || (e.raid && e.untargetable)) continue;
+      const val = e.raid || e.boss ? e.maxHp * A.skill.bossPct : e.hp, sp = pixText(String(Math.round(val)), e.raid ? '#b8ffd0' : '#fff4c0');
+      L.globalAlpha = fadeOut; L.drawImage(sp.n, SX(e.x, e.y) + (e.raid ? 30 : 0) - (sp.w >> 1), SY(e.x, e.y) - (e.raid ? 60 : 16)); L.globalAlpha = 1;
+    }
+  }
+  function drawJudgeScreen(s, W, H) {  // 화면 좌표: 임팩트 프레임 + 붉은 테두리의 검은 원
+    const c = s.cine; if (!c || c.kind !== 'judge') return;
+    const f = judgeFocus(s); if (!f) return;
+    const sk = c.t, z = judgeZoom(sk), Hh = judgeHit(f);
+    const fx = SX(f.x, f.y), fy = SY(f.x, f.y) - (f.raid ? 34 : 6);
+    const toScr = (x, y) => [W / 2 + (x - fx) * v.px * z, H / 2 + (y - fy) * v.px * z];
+    const [hx, hy] = toScr(Hh.x, Hh.y);
+    if (sk >= 1.25 && sk < 1.45) {
+      const q = (sk - 1.25) / 0.2;
+      ctx.fillStyle = `rgba(255, 30, 40, ${0.35 * (1 - q)})`; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.8 * (1 - q)})`; ctx.lineWidth = 2;
+      for (let i = 0; i < 28; i++) { const a = (i / 28) * Math.PI * 2 + crand(i, 70) * 0.2, r0 = (40 + crand(i, 71) * 30) * v.px; ctx.beginPath(); ctx.moveTo(hx + Math.cos(a) * r0, hy + Math.sin(a) * r0); ctx.lineTo(hx + Math.cos(a) * 2000, hy + Math.sin(a) * 2000); ctx.stroke(); }
+    }
+    if (sk >= 2.0 && sk < 3.3) {
+      const k = jEase(jc((sk - 2.0) / 0.8)), R = 10 + k * Math.hypot(W, H) * 1.1;
+      ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(hx, hy, R, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#ff2a2a'; ctx.lineWidth = (3 + (1 - k) * 3) * v.px; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,90,90,0.4)'; ctx.lineWidth = 8 * v.px; ctx.beginPath(); ctx.arc(hx, hy, R + 4 * v.px, 0, 7); ctx.stroke();
+      if (sk >= 2.8) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); }
+    }
+  }
   /* ---- 각성 스킬 연출: 적룡의 숨결 (게임은 멈춘 상태) ---- */
   const DRAGON_CV = document.createElement('canvas'); DRAGON_CV.width = DRAGON.W; DRAGON_CV.height = DRAGON.H;
   const DGC = DRAGON_CV.getContext('2d');
@@ -2647,7 +3153,7 @@ function createRenderer(canvas) {
   // 연출은 게임보다 잘게(화면 2.4px당 1도트) 그린 별도 층 → 시안과 같은 비율로 용이 보임
   const CINE = document.createElement('canvas'), CL = CINE.getContext('2d');
   function drawCine(s, t) {
-    const c = s.cine; if (!c) return false;
+    const c = s.cine; if (!c || c.kind !== 'dragonKnight') return false;
     const CS = 2.4, bw = Math.round(v.w / CS), bh = Math.round(v.h / CS);
     if (CINE.width !== bw || CINE.height !== bh) { CINE.width = bw; CINE.height = bh; }
     const L = CL; L.clearRect(0, 0, bw, bh); L.imageSmoothingEnabled = false;
@@ -2702,7 +3208,8 @@ function createRenderer(canvas) {
     const frames = SPR[e.type], spr = frames[Math.floor(t * (e.type === 'moth' ? 12 : 5) + e.seed) % frames.length];
     const sx = SX(e.x, e.y), sy = SY(e.x, e.y);
     const lift = e.type === 'moth' ? 4 + Math.round(Math.sin(t * 6 + e.seed) * 1.5) : e.type === 'sprinter' ? 2 : 0;
-    const chilled = (e.chillT || 0) > 0, burning = (e.burnT || 0) > 0;
+    const chilled = (e.chillT || 0) > 0 && !e.boss, slowed = (e.chillT || 0) > 0 && e.boss, burning = (e.burnT || 0) > 0;
+    if (slowed) isoEllipse(e.x, e.y, e.r + 4, 'rgba(200, 245, 255, 0.7)', 'rgba(170, 235, 255, 0.18)', 1);
     // 얼음: 바닥 서리 + 하얗게 언 몸 / 불: 붉게 일렁이는 몸
     if (chilled) { isoEllipse(e.x, e.y, e.r + 5, 'rgba(200, 245, 255, 0.85)', 'rgba(170, 235, 255, 0.28)', 1); }
     if (e.flash > 0) blit(spr, sx, sy - lift, false, true);
@@ -2744,6 +3251,8 @@ function createRenderer(canvas) {
     const sx = SX(p.x, p.y), sy = SY(p.x, p.y);
     if (!p.alive) { L.globalAlpha = 0.45; blit(SPR.player.back[0], sx, sy, false); L.globalAlpha = 1; return; }
     if (p.ascend === 'dragonKnight') { drawKnightPlayer(p, t, sx, sy); return; }
+    if (p.ascend === 'frostGeneral') { drawGeneralPlayer(p, t, sx, sy); return; }
+    if (p.ascend === 'judge') { drawJudgePlayer(p, t, sx, sy); return; }
     const swinging = p.atk && p.atk.swingT > 0;
     const spinning = p.atk && p.atk.spinT > 0;
     // 회전 베기 중에는 이동·시선과 상관없이 몸이 빙글빙글 돎 (한 바퀴 = EVO.whirlRot초)
@@ -2831,10 +3340,11 @@ function createRenderer(canvas) {
     if (me.ascend && me.skill) {  // 각성 스킬 버튼: 체력바 밑
       const A = ASCEND[me.ascend], bs = 48, bx = Lx, by = hy + 36, sk = me.skill;
       if (!drawHud.icon) { drawHud.icon = document.createElement('canvas'); drawHud.icon.width = drawHud.icon.height = 32; }
-      KNIGHT.icon(drawHud.icon.getContext('2d'), v.t);
+      ascendIconFn(me.ascend)(drawHud.icon.getContext('2d'), v.t);
       box(bx, by, bs, bs, '#2a0a0e');
       ctx.imageSmoothingEnabled = false; ctx.drawImage(drawHud.icon, bx, by, bs, bs);
-      if (!sk.ready || s.cine) {
+      if (s.blizz && s.blizz.pid === me.id) { const A2 = ASCEND.frostGeneral.skill, rem = 1 - Math.max(0, s.blizz.t - A2.intro) / A2.dur; ctx.fillStyle = 'rgba(6, 8, 12, 0.55)'; ctx.fillRect(bx, by, bs, bs); ctx.fillStyle = '#9ee8ff'; ctx.fillRect(bx, by + bs + 3, Math.round(bs * rem), 3); }
+      else if (!sk.ready || s.cine) {
         const boss = s.enemies.find(e => e.raid), need = boss ? boss.maxHp * A.skill.chargePct : 0, prog = sk.ready ? 1 : need ? Math.min(1, sk.charge / need) : 0;
         ctx.fillStyle = 'rgba(6, 8, 12, 0.74)'; ctx.fillRect(bx, by, bs, Math.round(bs * (1 - prog)));
         ctx.fillStyle = '#ff8a2a'; ctx.fillRect(bx, by + bs + 3, Math.round(bs * prog), 3);
@@ -2871,7 +3381,7 @@ function createRenderer(canvas) {
       ctx.fillStyle = qh.state === 'failed' ? '#ef5a6f' : '#ffd27a'; ctx.fillRect(qx + 10, qy + 44, Math.round((pw - 20) * Math.min(1, qh.progress / qh.goal)), 5);
       ctx.textBaseline = 'top'; ctx.textAlign = 'center';
     }
-    if (s.final) { ctx.fillStyle = '#ff9aa6'; ctx.font = `700 13px ${FONT_UI}`; ctx.fillText(s.final.spawned ? `${ABRU.NAME}를 쓰러뜨리세요` : '어둠이 걷힙니다…', W / 2, top + 58); }
+    if (s.final && !s.final.spawned) { ctx.fillStyle = '#ff9aa6'; ctx.font = `700 13px ${FONT_UI}`; ctx.fillText('어둠이 걷힙니다…', W / 2, top + 58); }
     // 처치 / 금화
 
     ctx.textAlign = 'right';
@@ -2934,9 +3444,11 @@ function createRenderer(canvas) {
     const t = v.t, me = s.players[localId];
     if (me) {
       let tx = me.x, ty = me.y;
-      const rb = s.final && s.enemies.find(e => e.raid);  // 최종 보스전: 카메라를 보스 쪽으로 당겨 둘 다 보이게
-      if (rb) { const dx = rb.x - me.x, dy = rb.y - me.y; if (dx * dx + dy * dy < 700 * 700) { tx += dx * 0.4; ty += dy * 0.4; } }
-      const k = 1 - Math.exp(-(rb ? 5 : 10) * dt); v.camX += (tx - v.camX) * k; v.camY += (ty - v.camY) * k;
+      const jf = judgeFocus(s);  // 롱기누스의 창: 대상을 화면 가운데로 (화면 밖이어도 따라감)
+      const rb = !jf && s.final && s.enemies.find(e => e.raid);  // 최종 보스전: 카메라를 보스 쪽으로 당겨 둘 다 보이게
+      if (jf) { tx = jf.x; ty = jf.y; const pull = jf.raid ? 34 : 6; tx -= pull / ISO_A / 2; ty -= pull / ISO_A / 2; }
+      else if (rb) { const dx = rb.x - me.x, dy = rb.y - me.y; if (dx * dx + dy * dy < 700 * 700) { tx += dx * 0.4; ty += dy * 0.4; } }
+      const k = 1 - Math.exp(-(jf ? 9 : rb ? 5 : 10) * dt); v.camX += (tx - v.camX) * k; v.camY += (ty - v.camY) * k;
     }
     const bw = v.bw, bh = v.bh, PXs = v.px;
     const sh = reduceMotion ? 0 : v.shake / PXs;
@@ -3007,7 +3519,8 @@ function createRenderer(canvas) {
     for (const it of D) {
       switch (it.kind) {
         case 'enemy': {
-          if (it.o.raid) { drawAbru(it.o, t, lights); break; }
+          if (it.o.raid && it.o.iceLock) { drawAbru(it.o, t, lights); drawFrozenBoss(s, it.o, t); lights.push([SX(it.o.x, it.o.y), SY(it.o.x, it.o.y) - 36, 40, 'rgba(160, 230, 255, 0.3)']); break; }
+          if (it.o.raid) { if ((it.o.chillT || 0) > 0) { isoEllipse(it.o.x, it.o.y, it.o.r + 8, 'rgba(200, 245, 255, 0.75)', 'rgba(170, 235, 255, 0.18)', 1); lights.push([SX(it.o.x, it.o.y), SY(it.o.x, it.o.y) - 20, 30, 'rgba(160, 230, 255, 0.25)']); } drawAbru(it.o, t, lights); break; }
           if (it.o.sprout) { drawSprout(it.o, t, lights, s); break; }
           drawEnemy(it.o, t);
           const eo = it.o, ex = SX(eo.x, eo.y), ey = SY(eo.x, eo.y) - 8;
@@ -3204,6 +3717,7 @@ function createRenderer(canvas) {
     L.globalAlpha = 1;
 
     drawAshFall(t);
+    drawJudgeWorld(s, t);
     // 아브루가 쓰러지는 연출: 배경만 어두워지고 보스와 캐릭터는 그대로
     if (s.final && s.final.phase === 'dying') {
       const boss = s.enemies.find(e => e.raid), k = Math.min(1, (ABRU.DEATH - s.final.t) / 0.6);
@@ -3221,10 +3735,16 @@ function createRenderer(canvas) {
 
     // 확대해서 메인 캔버스로
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(buf, 0, 0, bw * PXs * v.dpr, bh * PXs * v.dpr);
+    const jzf = judgeFocus(s), jz = jzf ? judgeZoom(s.cine.t) : 1;
+    if (jz > 1.001) {  // 대상 쪽으로 확대: 버퍼 가운데를 잘라 크게 그림
+      const fx = SX(jzf.x, jzf.y), fy = SY(jzf.x, jzf.y) - (jzf.raid ? 34 : 6), sw = bw / jz, sh = bh / jz;
+      ctx.drawImage(buf, fx - sw / 2, fy - sh / 2, sw, sh, 0, 0, bw * PXs * v.dpr, bh * PXs * v.dpr);
+    } else ctx.drawImage(buf, 0, 0, bw * PXs * v.dpr, bh * PXs * v.dpr);
     ctx.setTransform(v.dpr, 0, 0, v.dpr, 0, 0);
     const W = v.w, H = v.h;
     if (drawCine(s, v.t)) { ctx.imageSmoothingEnabled = false; ctx.drawImage(CINE, 0, 0, W, H); }
+    if (drawBlizzard(s, v.t)) { ctx.imageSmoothingEnabled = false; ctx.drawImage(BLZ, 0, 0, W, H); }
+    drawJudgeScreen(s, W, H);
     if (v.flash > 0) { ctx.fillStyle = `rgba(239, 90, 111, ${v.flash * 1.4})`; ctx.fillRect(0, 0, W, H); }
     else if (v.flash < 0) { ctx.fillStyle = `rgba(255, 245, 220, ${-v.flash * 1.6})`; ctx.fillRect(0, 0, W, H); }
 
@@ -3234,8 +3754,10 @@ function createRenderer(canvas) {
       if (tx.pix) continue;
       ctx.globalAlpha = Math.min(1, (tx.life / tx.max) * 2);
       const x = SX(tx.x, tx.y) * PXs, y = (SY(tx.x, tx.y) - tx.rise) * PXs;
-      ctx.strokeStyle = '#0a1012'; ctx.lineWidth = 4; ctx.strokeText(tx.text, x, y);
+      if (tx.big) ctx.font = `30px ${FONT_DISP}`;
+      ctx.strokeStyle = '#0a1012'; ctx.lineWidth = tx.big ? 6 : 4; ctx.strokeText(tx.text, x, y);
       ctx.fillStyle = tx.c; ctx.fillText(tx.text, x, y);
+      if (tx.big) ctx.font = `16px ${FONT_DISP}`;
     }
     ctx.globalAlpha = 1;
 
@@ -3297,7 +3819,9 @@ function createRenderer(canvas) {
 
   const worldToScreen = (x, y) => ({ x: SX(x, y) * v.px, y: SY(x, y) * v.px });
   const visibleEnemyIds = s => s.enemies.filter(e => { const x = SX(e.x, e.y), y = SY(e.x, e.y); return !e.dead && x >= -6 && x <= v.bw + 6 && y >= -4 && y <= v.bh + 24; }).map(e => e.id);
-  return { view: v, resize, consume, render, snapCamera, screenToWorldDir, worldToScreen, visibleEnemyIds };
+  const idsInViewAt = (s, f) => s.enemies.filter(e => { const dx = e.x - f.x, dy = e.y - f.y, x = (dx - dy) * ISO_A, y = (dx + dy) * ISO_A * 0.5; return !e.dead && Math.abs(x) <= v.bw / 2 + 6 && y >= -v.bh / 2 - 30 && y <= v.bh / 2 + 34; }).map(e => e.id);
+  const viewRadius = () => Math.hypot(v.bw / (2 * ISO_A), v.bh / ISO_A) / Math.SQRT2;
+  return { view: v, resize, consume, render, snapCamera, screenToWorldDir, worldToScreen, visibleEnemyIds, viewRadius, idsInViewAt };
 }
 
 /* ---------------- 5. INPUT (local only) ---------------- */
@@ -3458,8 +3982,30 @@ const Sound = (() => {
     },
     ascend() { [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, 1.4, { type: 'sawtooth', vol: 0.04, lp: 2400, delay: i * 0.08 })); noise(1.5, { f: 300, f2: 3000, q: 0.5, vol: 0.12, attack: 0.4 }); tone(65, 1.6, { vol: 0.2, attack: 0.05 }); },
     skillReady() { [784, 988, 1319].forEach((f, i) => tone(f, 0.35, { type: 'triangle', vol: 0.07, delay: i * 0.07 })); },
+    judgeCine() {
+      noise(0.5, { ft: 'lowpass', f: 400, f2: 120, vol: 0.12, attack: 0.2 }); tone(42, 1.0, { type: 'sawtooth', vol: 0.06, lp: 200, attack: 0.3 });
+      noise(0.32, { f: 600, f2: 4000, q: 0.8, vol: 0.18, attack: 0.25, delay: 0.95 });  // 창이 날아옴
+      tone(60, 0.7, { to: 28, vol: 0.32, delay: 1.25 }); noise(0.4, { ft: 'lowpass', f: 2500, f2: 300, vol: 0.3, delay: 1.25 }); for (let i = 0; i < 5; i++) noise(0.05, { f: R(800, 2000), q: 4, vol: 0.12, delay: 1.27 + i * 0.03 });  // 꽂힘
+      [1.45, 1.75].forEach(d => tone(55, 0.25, { to: 40, vol: 0.18, delay: d }));  // 맥박
+      tone(30, 0.9, { type: 'sawtooth', to: 55, vol: 0.12, lp: 300, attack: 0.7, delay: 2.0 }); noise(0.8, { f: 200, f2: 1200, q: 0.6, vol: 0.12, attack: 0.7, delay: 2.0 });  // 검은 원
+      [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 1.5, { type: 'sine', vol: 0.05, attack: 0.15, delay: 3.3 + i * 0.03 })); noise(1.2, { ft: 'highpass', f: 5000, vol: 0.05, attack: 0.3, delay: 3.3 });  // 빛기둥
+      tone(1568, 0.9, { vol: 0.06, delay: 3.75 }); tone(2093, 0.7, { vol: 0.04, delay: 3.78 });  // 십자가
+    },
+    blizzStart() { noise(0.9, { f: 300, f2: 2500, q: 0.5, vol: 0.2, attack: 0.3 }); for (let i = 0; i < 8; i++) tone(R(2500, 5000), 0.15, { vol: 0.03, delay: 0.4 + i * 0.05 }); },
+    bossFreeze() { noise(0.4, { ft: 'highpass', f: 3000, vol: 0.12 }); tone(120, 0.6, { type: 'triangle', to: 60, vol: 0.12 }); for (let i = 0; i < 5; i++) tone(R(1800, 3600), 0.3, { vol: 0.04, delay: i * 0.06 }); },
+    frostBreak() { noise(0.12, { ft: 'highpass', f: 3000, vol: 0.25 }); noise(0.8, { f: 2500, f2: 600, q: 0.6, vol: 0.14 }); for (let i = 0; i < 14; i++) tone(R(2000, 6000), R(0.1, 0.4), { vol: 0.05, delay: i * R(0.01, 0.04) }); tone(90, 0.6, { to: 40, vol: 0.2 }); },
     ashHit() { noise(0.2, { f: 600, f2: 200, q: 0.8, vol: 0.08 }); },
   };
+  let wind = null;
+  function windStart() {  // 눈보라 바람 소리: 꺼질 때까지 반복
+    if (!ctx || wind) return;
+    const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+    src.buffer = noiseBuf; src.loop = true; f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = 0.7;
+    lfo.frequency.value = 0.35; lg.gain.value = 400; lfo.connect(lg); lg.connect(f.frequency);
+    g.gain.setValueAtTime(0.0001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 0.5);
+    src.connect(f); f.connect(g); g.connect(sfxG); src.start(); lfo.start(); wind = { src, g, lfo };
+  }
+  function windStop() { if (!wind || !ctx) return; const w = wind; wind = null; w.g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25); setTimeout(() => { try { w.src.stop(); w.lfo.stop(); } catch {} }, 1500); }
   function play(name, ...a) { if (!ctx || ctx.state !== 'running' || vol.sfx <= 0) return; try { SFX[name](...a); } catch {} }
 
   function onEvents(events, localId) {
@@ -3499,7 +4045,11 @@ const Sound = (() => {
         case 'sprout': play('sproutUp'); break;
         case 'bind': play('bindSnap'); break;
         case 'tired': play('tired'); break;
-        case 'cine': play('dragonCine'); break;
+        case 'cine': play(ev.kind === 'judge' ? 'judgeCine' : 'dragonCine'); break;
+        case 'blizzStart': play('blizzStart'); windStart(); break;
+        case 'blizzEnd': windStop(); break;
+        case 'bossFreeze': play('bossFreeze'); break;
+        case 'frostBreak': play('frostBreak'); break;
         case 'ascend': play('ascend'); break;
         case 'skillReady': if (ev.pid === localId) play('skillReady'); break;
         case 'ash': if (gate('ash', 60)) play('ashHit'); break;
@@ -3560,7 +4110,156 @@ const Sound = (() => {
 // 브라우저마다 '사용자 동작'으로 인정하는 이벤트가 달라서 여러 개에 걸어 둠 (iOS는 touchend/click)
 ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'mousedown', 'click', 'keydown'].forEach(ev => window.addEventListener(ev, () => Sound.unlock(), { capture: true, passive: true }));
 
-const ov = { start: $('ovStart'), level: $('ovLevel'), pause: $('ovPause'), end: $('ovEnd') };
+/* ===================== 온라인 계정 (Supabase) =====================
+   닉네임 + 비밀번호로 가입·로그인. Supabase 로그인은 이메일이 필요해서, 닉네임을 겉으로 안 보이는 가짜 이메일로 바꿔 씀.
+   아래 두 값을 채우면 켜짐. 비워 두면 '이 기기에만 저장(게스트)'으로만 동작. 공개 키(anon key)만 넣고, 비밀 키(service_role)는 절대 넣지 말 것 */
+const ONLINE_CONFIG = {
+  url: 'https://yxjnrkuccoyspcyxfhen.supabase.co',
+  anonKey: 'sb_publishable_ekQxLCcJsSA5Q7O2YPWspw_tTDbXD-N',  // 공개(publishable) 키
+};
+const Online = (() => {
+  let client = null, loading = null;
+  const inArtifact = () => !!(window.claude && typeof window.claude.use === 'function');  // claude.ai 아티팩트는 외부 서버 접속이 막혀 있음
+  const configured = () => !!window.__lwMockSupabase || (!!ONLINE_CONFIG.url && !!ONLINE_CONFIG.anonKey && !inArtifact());
+  function load() {
+    if (loading) return loading;
+    loading = new Promise(res => {
+      if (window.__lwMockSupabase) { client = window.__lwMockSupabase(); return res(client); }  // 테스트용
+      if (!configured()) return res(null);
+      const make = () => { try { client = window.supabase.createClient(ONLINE_CONFIG.url, ONLINE_CONFIG.anonKey, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'lantern-warden-auth' } }); } catch { client = null; } res(client); };
+      if (window.supabase && window.supabase.createClient) return make();
+      const sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js';
+      sc.onload = make; sc.onerror = () => res(null);
+      document.head.appendChild(sc);
+    });
+    return loading;
+  }
+  // 닉네임 → 로그인용 가짜 이메일 (UTF-8 바이트를 base32 소문자로)
+  function nickEmail(nick) {
+    const bytes = new TextEncoder().encode(nick.normalize('NFC').toLowerCase()), A = 'abcdefghijklmnopqrstuvwxyz234567';
+    let bits = 0, val = 0, out = '';
+    for (const b of bytes) { val = (val << 8) | b; bits += 8; while (bits >= 5) { out += A[(val >>> (bits - 5)) & 31]; bits -= 5; } }
+    if (bits > 0) out += A[(val << (5 - bits)) & 31];
+    return 'p' + out + '@players.example.com';
+  }
+  return { configured, inArtifact, load, nickEmail, get client() { return client; } };
+})();
+
+/* ===================== 계정 =====================
+   게스트: 이 기기의 브라우저에만 저장 / 온라인: Supabase의 profiles 표에 저장 (닉네임 + 비밀번호 로그인)
+   게임 상태(state)에는 플레이어마다 accountId와 닉네임만 들어감 (멀티플레이 대비) */
+const Account = (() => {
+  const KEY = 'lantern-warden-account', VERSION = 1, WEAPON_KEYS = ['sword', 'greatsword', 'spear'];
+  const rid = () => 'local_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  const blank = () => ({
+    v: VERSION, id: rid(), nickname: '파수꾼', createdAt: Date.now(), lastPlayedAt: null,
+    stats: { games: 0, wins: 0, totalKills: 0, totalTime: 0, bestTime: 0, bestLevel: 0, bestKills: 0, abruKills: 0, fastestAbru: null },
+    weapons: Object.fromEntries(WEAPON_KEYS.map(k => [k, { games: 0, wins: 0, bestTime: 0 }])),
+    ascends: {},
+  });
+  function normalize(d) {
+    const b = blank(); if (!d || typeof d !== 'object') return b;
+    const out = { ...b, ...d, stats: { ...b.stats, ...(d.stats || {}) }, weapons: { ...b.weapons }, ascends: { ...(d.ascends || {}) } };
+    for (const k of WEAPON_KEYS) out.weapons[k] = { ...b.weapons[k], ...((d.weapons || {})[k] || {}) };
+    out.nickname = cleanName(out.nickname) || '파수꾼'; out.v = VERSION;
+    return out;
+  }
+  function cleanName(n) { return String(n || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 12); }
+  const NICK_OK = /^[가-힣A-Za-z0-9_]{2,12}$/;
+  let guest, data, mode = 'guest', uid = null, saveTimer = null, saving = Promise.resolve(), status = '';
+  const listeners = new Set(), emit = () => listeners.forEach(f => f());
+  function loadGuest() {
+    let d = null; try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch {}
+    guest = normalize(d);
+    if (!d) { try { const old = JSON.parse(localStorage.getItem('lantern-warden-best') || 'null'); if (old) { guest.stats.bestTime = old.time || 0; guest.stats.bestLevel = old.level || 0; guest.stats.bestKills = old.kills || 0; } } catch {} }
+  }
+  function saveGuest() { try { localStorage.setItem(KEY, JSON.stringify(guest)); } catch {} }
+  function save() {
+    if (mode === 'guest') { saveGuest(); emit(); return; }
+    emit();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {  // 몰아서 한 번에 저장
+      const snap = JSON.parse(JSON.stringify(data));
+      saving = saving.then(async () => { try { const c = Online.client; const { error } = await c.from('profiles').update({ data: snap, updated_at: new Date().toISOString() }).eq('id', uid); status = error ? '저장에 실패했어요. 다음 판이 끝날 때 다시 시도해요.' : ''; } catch { status = '서버에 연결할 수 없어요.'; } emit(); });
+    }, 800);
+  }
+  async function loadProfile(user) {
+    const c = Online.client;
+    const { data: row, error } = await c.from('profiles').select('nickname, data').eq('id', user.id).maybeSingle();
+    if (error) throw error;
+    if (!row) return false;
+    data = normalize({ ...(row.data || {}), nickname: row.nickname }); data.id = user.id;
+    uid = user.id; mode = 'online'; emit(); return true;
+  }
+  const errText = e => {
+    const m = String((e && (e.message || e.error_description)) || e || '');
+    if (/invalid login|invalid credentials|invalid_grant/i.test(m)) return '닉네임 또는 비밀번호가 맞지 않아요.';
+    if (/already registered|already exists|duplicate|unique/i.test(m)) return '이미 쓰고 있는 닉네임이에요.';
+    if (/password/i.test(m) && /6|short|length/i.test(m)) return '비밀번호는 6자 이상이어야 해요.';
+    if (/fetch|network|failed to/i.test(m)) return '서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요.';
+    return '문제가 생겼어요. 잠시 뒤 다시 시도해 주세요.';
+  };
+  async function restore() {  // 저장된 로그인 이어가기
+    const c = await Online.load(); if (!c) return;
+    try { const { data: s } = await c.auth.getSession(); if (s && s.session) await loadProfile(s.session.user); } catch { status = '서버에 연결할 수 없어요. 지금은 이 기기에만 저장돼요.'; emit(); }
+  }
+  loadGuest(); data = guest;
+  restore();
+  return {
+    get data() { return data; },
+    get mode() { return mode; },
+    get status() { return status; },
+    get onlineAvailable() { return Online.configured(); },
+    onChange(f) { listeners.add(f); return () => listeners.delete(f); },
+    validate(nick, pw, pw2) {
+      if (!NICK_OK.test(nick || '')) return '닉네임은 한글·영문·숫자·_ 로 2~12자예요.';
+      if (!pw || pw.length < 6) return '비밀번호는 6자 이상이어야 해요.';
+      if (pw2 !== undefined && pw !== pw2) return '비밀번호 확인이 맞지 않아요.';
+      return '';
+    },
+    async signUp(nick, pw, pw2) {
+      const bad = this.validate(nick, pw, pw2); if (bad) return { ok: false, error: bad };
+      const c = await Online.load(); if (!c) return { ok: false, error: '온라인 계정을 쓸 수 없어요.' };
+      try {
+        const { data: taken, error: e0 } = await c.rpc('nickname_taken', { n: nick }); if (e0) throw e0;
+        if (taken) return { ok: false, error: '이미 쓰고 있는 닉네임이에요.' };
+        const { data: r, error } = await c.auth.signUp({ email: Online.nickEmail(nick), password: pw }); if (error) throw error;
+        if (!r || !r.session) return { ok: false, error: '가입은 됐지만 바로 로그인되지 않았어요. Supabase에서 이메일 확인(Confirm email)을 꺼 주세요.' };
+        const first = normalize({ ...guest, nickname: nick, id: r.user.id });  // 이 기기의 게스트 기록을 새 계정으로 옮김
+        const { error: e2 } = await c.from('profiles').insert({ id: r.user.id, nickname: nick, data: first }); if (e2) throw e2;
+        await loadProfile(r.user); return { ok: true, moved: guest.stats.games > 0 };
+      } catch (e) { return { ok: false, error: errText(e) }; }
+    },
+    async logIn(nick, pw) {
+      const bad = this.validate(nick, pw); if (bad) return { ok: false, error: bad };
+      const c = await Online.load(); if (!c) return { ok: false, error: '온라인 계정을 쓸 수 없어요.' };
+      try {
+        const { data: r, error } = await c.auth.signInWithPassword({ email: Online.nickEmail(nick), password: pw }); if (error) throw error;
+        if (!(await loadProfile(r.user))) {  // 프로필이 없으면 새로 만듦 (가입 도중 끊긴 경우)
+          const { error: e2 } = await c.from('profiles').insert({ id: r.user.id, nickname: nick, data: normalize({ nickname: nick }) }); if (e2) throw e2;
+          await loadProfile(r.user);
+        }
+        return { ok: true };
+      } catch (e) { return { ok: false, error: errText(e) }; }
+    },
+    async logOut() { try { const c = await Online.load(); if (c) await c.auth.signOut(); } catch {} mode = 'guest'; uid = null; data = guest; status = ''; emit(); },
+    setNickname(n) { if (mode !== 'guest') return false; const v = cleanName(n); if (!v || v === data.nickname) return false; data.nickname = v; save(); return true; },
+    recordGame(r) {
+      const st = data.stats, w = data.weapons[r.weapon] || (data.weapons[r.weapon] = { games: 0, wins: 0, bestTime: 0 });
+      st.games++; w.games++; data.lastPlayedAt = Date.now();
+      if (r.win) { st.wins++; w.wins++; st.abruKills++; if (r.abruSec != null && (st.fastestAbru == null || r.abruSec < st.fastestAbru)) st.fastestAbru = r.abruSec; }
+      st.totalKills += r.kills; st.totalTime += Math.floor(r.time);
+      if (r.time > st.bestTime || (Math.floor(r.time) === st.bestTime && r.kills > st.bestKills)) { st.bestTime = Math.floor(r.time); st.bestKills = r.kills; }
+      st.bestLevel = Math.max(st.bestLevel, r.level); w.bestTime = Math.max(w.bestTime, Math.floor(r.time));
+      if (r.ascend) { const a = data.ascends[r.ascend] || (data.ascends[r.ascend] = { firstAt: Date.now(), uses: 0 }); a.uses += r.skillUses || 0; }
+      save();
+    },
+    discoverAscend(key) { if (!data.ascends[key]) { data.ascends[key] = { firstAt: Date.now(), uses: 0 }; save(); } },
+  };
+})();
+
+const ov = { start: $('ovStart'), level: $('ovLevel'), pause: $('ovPause'), end: $('ovEnd'), account: $('ovAccount') };
 
 let state = null;
 let localId = 'p1';
@@ -3577,16 +4276,45 @@ function showOnly(name) {
 
 function loadBest() { try { return JSON.parse(localStorage.getItem('lantern-warden-best') || 'null'); } catch { return null; } }
 function saveBest(rec) { try { localStorage.setItem('lantern-warden-best', JSON.stringify(rec)); } catch {} }
+const WEAPON_NAMES = { sword: '한손검', greatsword: '양손검', spear: '창' };
+function renderAccount() {
+  const d = Account.data, st = d.stats;
+  $('acTitle').textContent = d.nickname;
+  if (document.activeElement !== $('nickInput')) $('nickInput').value = d.nickname;
+  const online = Account.mode === 'online';
+  $('nickLabel').textContent = Account.onlineAvailable && !online ? '게스트 닉네임' : '닉네임';
+  $('acAuth').hidden = online || !Account.onlineAvailable; $('acOnline').hidden = !online; $('acNickRow').hidden = online;
+  $('acStore').textContent = Account.status || (online ? '온라인 계정에 저장돼요. 다른 기기에서도 같은 닉네임과 비밀번호로 이어서 할 수 있어요.'
+    : Account.onlineAvailable ? '지금은 게스트예요. 기록이 이 기기에만 저장돼요. 가입하면 지금까지의 기록을 계정으로 옮겨요.'
+    : Online.inArtifact() ? '이 화면(Claude 아티팩트)에서는 온라인 계정을 쓸 수 없어요. 기록은 이 기기에만 저장돼요.'
+    : '이 기기의 브라우저에만 저장돼요. 브라우저 데이터를 지우면 함께 지워져요.');
+  const winRate = st.games ? Math.round((st.wins / st.games) * 100) + '%' : '-';
+  $('acStats').innerHTML = statHtml([['플레이', st.games + '판'], ['아브루 처치', st.wins + '회'], ['승률', winRate], ['최고 생존', fmtTime(st.bestTime)], ['최고 레벨', st.bestLevel], ['최다 처치', st.bestKills.toLocaleString()], ['누적 처치', st.totalKills.toLocaleString()], ['아브루 최단', st.fastestAbru != null ? fmtTime(st.fastestAbru) : '-']]);
+  $('acWeapons').innerHTML = statHtml(Object.keys(WEAPON_NAMES).map(k => { const w = d.weapons[k]; return [WEAPON_NAMES[k], `${w.games}판 · ${w.wins}승 · 최고 ${fmtTime(w.bestTime)}`]; }));
+  const box = $('acAscends'); box.innerHTML = '';
+  for (const k of Object.keys(ASCEND)) {
+    const A = ASCEND[k], got = d.ascends[k], card = document.createElement('div');
+    card.className = 'asc-card' + (got ? '' : ' locked');
+    if (got) {
+      const img = document.createElement('img'); img.src = ascendIcon(k); img.alt = ''; card.append(img);
+      const t = document.createElement('div'); t.innerHTML = `<b></b><span></span><span></span>`; t.children[0].textContent = A.name; t.children[1].textContent = `${WEAPON_NAMES[A.weapon]} + ${ELEMENTS[A.element].name} + 레벨 ${A.level}`; t.children[2].textContent = `${A.skill.name} · ${got.uses}회 사용`; card.append(t);
+    } else { card.innerHTML = '<div class="q">?</div><div><b>???</b><span>아직 발견하지 못한 각성</span></div>'; }
+    box.append(card);
+  }
+}
+function openAccount() { renderAccount(); showOnly('account'); }
 function refreshBest() {
-  const b = loadBest();
-  $('bestLine').textContent = b ? `최고 기록 · ${fmtTime(b.time)} 생존 · 레벨 ${b.level} · 처치 ${b.kills.toLocaleString()}` : '15분을 버티면 새벽이 옵니다.';
+  const d = Account.data, st = d.stats;
+  $('acctName').textContent = d.nickname; $('acctAva').textContent = d.nickname.slice(0, 1);
+  $('acctMeta').textContent = (Account.mode === 'guest' && Account.onlineAvailable ? '게스트 · 눌러서 로그인 · ' : '') + (st.games ? `${st.games}판 · 최고 ${fmtTime(st.bestTime)} · 레벨 ${st.bestLevel}${st.wins ? ` · 아브루 ${st.wins}회 처치` : ''}` : '첫 판을 시작해 보세요');
+  $('bestLine').textContent = st.games ? `최고 기록 · ${fmtTime(st.bestTime)} 생존 · 레벨 ${st.bestLevel} · 처치 ${st.bestKills.toLocaleString()}` : '15분을 버티면 새벽이 옵니다.';
 }
 
 let lastWeapon = 'sword';
 function startGame(weaponKey = lastWeapon) {
   lastWeapon = weaponKey;
   state = createState();
-  addPlayer(state, localId, { name: '파수꾼', hue: 192, weapon: weaponKey });
+  addPlayer(state, localId, { name: Account.data.nickname, hue: 192, weapon: weaponKey, accountId: Account.data.id });
   if (Dev.on) buildDevPanel();
   renderer.snapCamera(state.players[localId]);
   Input.reset(); shownChoiceSeq = -1;
@@ -3631,10 +4359,11 @@ function endGame() {
   const p = state.players[localId], win = state.phase === 'victory';
   $('endEyebrow').textContent = win ? '생존 성공' : '쓰러짐';
   $('endTitle').textContent = win ? '새벽이 밝았습니다' : '등불이 꺼졌습니다';
-  $('endText').textContent = win ? '최후의 수문장을 쓰러뜨렸습니다. 숲에 아침이 찾아옵니다.' : `${fmtTime(state.time)} 동안 버텼습니다. 다시 등불을 밝혀 보세요.`;
+  $('endText').textContent = win ? '아브루를 쓰러뜨렸습니다. 숲에 아침이 찾아옵니다.' : `${fmtTime(state.time)} 동안 버텼습니다. 다시 등불을 밝혀 보세요.`;
   $('endStats').innerHTML = statHtml([['생존 시간', fmtTime(state.time)], ['레벨', p.level], ['처치', p.kills.toLocaleString()], ['금화', p.gold], ['보물상자', p.chests]]);
-  const b = loadBest();
-  if (!b || state.time > b.time || (state.time === b.time && p.kills > b.kills)) saveBest({ time: Math.floor(state.time), level: p.level, kills: p.kills });
+  const fin = state.final;
+  Account.recordGame({ weapon: p.weaponKey, element: p.element, ascend: p.ascend, win, time: state.time, level: p.level, kills: p.kills, skillUses: p.skillUses || 0,
+    abruSec: win && fin && fin.fightTick != null ? Math.round((state.tick - fin.fightTick) * CONFIG.TICK) : null });
   showOnly('end');
 }
 
@@ -3664,6 +4393,7 @@ function frame(now) {
   }
   if (state) {
     Sound.onEvents(state.events, localId);
+    for (const ev of state.events) if (ev.t === 'ascend' && ev.pid === localId) Account.discoverAscend(ev.key);
     renderer.consume(state.events, state, localId); state.events.length = 0;
     renderer.render(state, localId, screen === 'playing' ? dt * Dev.speed : 0, Input.joy);
   } else {
@@ -3702,8 +4432,15 @@ function aimVector() {
 }
 function castSkill() {
   const me = state && state.players[localId];
-  if (!me || !me.skill || !me.skill.ready || state.cine || screen !== 'playing' || levelOpen()) return false;
-  queueAction({ type: 'skill', targets: renderer.visibleEnemyIds(state) }); return true;
+  if (!me || !me.skill || !me.skill.ready || state.cine || state.blizz || screen !== 'playing' || levelOpen()) return false;
+  if (me.ascend === 'judge') {
+    const boss = state.enemies.find(e => e.raid && !e.dead && !e.untargetable);
+    let focus = boss;
+    if (!focus) { const vis = new Set(renderer.visibleEnemyIds(state)); for (const e of state.enemies) if (vis.has(e.id) && !e.dead && (!focus || e.hp > focus.hp)) focus = e; }
+    if (!focus) return false;  // 화면에 적이 없으면 쓸 수 없음
+    queueAction({ type: 'skill', focus: focus.id, targets: renderer.idsInViewAt(state, focus) }); return true;
+  }
+  queueAction({ type: 'skill', targets: renderer.visibleEnemyIds(state), radius: renderer.viewRadius() }); return true;
 }
 canvas.addEventListener('pointerdown', e => {  // 각성 스킬 버튼
   if (e.pointerType === 'touch') Input.touchSeen = true;
@@ -3763,6 +4500,34 @@ function buildWeaponPicker() {
 }
 buildWeaponPicker();
 $('btnRetry').addEventListener('click', () => startGame(lastWeapon));
+$('btnAccount').addEventListener('click', openAccount);
+let authMode = 'login';
+function setAuthMode(m) {
+  authMode = m;
+  $('tabLogin').classList.toggle('on', m === 'login'); $('tabSignup').classList.toggle('on', m === 'signup');
+  $('tabLogin').setAttribute('aria-selected', m === 'login'); $('tabSignup').setAttribute('aria-selected', m === 'signup');
+  $('authPw2').hidden = $('authPw2Label').hidden = m !== 'signup';
+  $('authPw').autocomplete = m === 'signup' ? 'new-password' : 'current-password';
+  $('authSubmit').textContent = m === 'signup' ? '가입하기' : '로그인'; $('authErr').textContent = '';
+}
+$('tabLogin').addEventListener('click', () => setAuthMode('login'));
+$('tabSignup').addEventListener('click', () => setAuthMode('signup'));
+$('authForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nick = $('authNick').value.trim(), pw = $('authPw').value, btn = $('authSubmit');
+  btn.disabled = true; $('authErr').textContent = authMode === 'signup' ? '가입하는 중…' : '로그인하는 중…';
+  const r = authMode === 'signup' ? await Account.signUp(nick, pw, $('authPw2').value) : await Account.logIn(nick, pw);
+  btn.disabled = false;
+  if (!r.ok) { $('authErr').textContent = r.error; return; }
+  $('authErr').textContent = ''; $('authPw').value = $('authPw2').value = '';
+  renderAccount();
+  if (r.moved) $('acStore').textContent = '가입했어요. 이 기기의 게스트 기록을 계정으로 옮겼어요.';
+});
+$('btnLogout').addEventListener('click', async () => { await Account.logOut(); renderAccount(); refreshBest(); });
+$('btnAcctClose').addEventListener('click', () => { refreshBest(); showOnly('start'); });
+$('btnNick').addEventListener('click', () => { if (Account.setNickname($('nickInput').value)) renderAccount(); else $('nickInput').value = Account.data.nickname; });
+$('nickInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('btnNick').click(); } });
+Account.onChange(() => { if (!ov.account.hidden) renderAccount(); if (screen === 'start') refreshBest(); });
 $('btnChange').addEventListener('click', () => { state = null; screen = 'start'; refreshBest(); showOnly('start'); });
 $('pauseBtn').addEventListener('click', pauseGame);
 $('btnResume').addEventListener('click', resumeGame);
@@ -3825,6 +4590,8 @@ function devRows() {
       r('빙결 유지(안깨짐) 초', () => ELEMENTS.ice.lockSec, v => { ELEMENTS.ice.lockSec = v; }, 0, 3, 0.05),
       r('깨짐 최대HP %', () => ELEMENTS.ice.breakPct * 100, v => { ELEMENTS.ice.breakPct = v / 100; }, 0, 100, 1),
       r('깨짐 보스 %', () => ELEMENTS.ice.bossBreakPct * 100, v => { ELEMENTS.ice.bossBreakPct = v / 100; }, 0, 50, 0.5),
+      r('보스 둔화 %', () => ELEMENTS.ice.bossSlow * 100, v => { ELEMENTS.ice.bossSlow = v / 100; }, 0, 95, 5),
+      r('보스 받는피해 +%', () => ELEMENTS.ice.bossVuln * 100, v => { ELEMENTS.ice.bossVuln = v / 100; }, 0, 200, 5),
       r('파편 최대HP %', () => ELEMENTS.ice.shatterPct * 100, v => { ELEMENTS.ice.shatterPct = v / 100; }, 0, 100, 1),
       r('파편 반경', () => ELEMENTS.ice.shatterRadius, v => { ELEMENTS.ice.shatterRadius = v; }, 20, 300, 5),
       r('냉기 면역 초', () => ELEMENTS.ice.immuneSec, v => { ELEMENTS.ice.immuneSec = v; }, 0, 10, 0.1),
@@ -3842,6 +4609,16 @@ function devRows() {
       r('피해 배율', () => ASCEND.dragonKnight.dmgMult, v => { ASCEND.dragonKnight.dmgMult = v; devRecalc(); }, 1, 30, 0.5),
       r('스킬 보스 피해 %', () => ASCEND.dragonKnight.skill.bossPct * 100, v => { ASCEND.dragonKnight.skill.bossPct = v / 100; }, 0, 100, 1),
       r('충전 필요 (보스 체력 %)', () => ASCEND.dragonKnight.skill.chargePct * 100, v => { ASCEND.dragonKnight.skill.chargePct = v / 100; }, 1, 100, 1),
+    ], '즉시 적용'],
+    ['각성 · 심판자', [
+      r('피해 배율', () => ASCEND.judge.dmgMult, v => { ASCEND.judge.dmgMult = v; devRecalc(); }, 1, 30, 0.5),
+      r('스킬 보스 피해 %', () => ASCEND.judge.skill.bossPct * 100, v => { ASCEND.judge.skill.bossPct = v / 100; }, 0, 100, 1),
+    ], '즉시 적용'],
+    ['각성 · 혹한의 장군', [
+      r('피해 배율', () => ASCEND.frostGeneral.dmgMult, v => { ASCEND.frostGeneral.dmgMult = v; devRecalc(); }, 1, 40, 0.5),
+      r('언 보스 받는피해 +%', () => ASCEND.frostGeneral.skill.bossVuln * 100, v => { ASCEND.frostGeneral.skill.bossVuln = v / 100; }, 0, 1000, 10),
+      r('얼음 파괴 필요 %', () => ASCEND.frostGeneral.skill.breakPct * 100, v => { ASCEND.frostGeneral.skill.breakPct = v / 100; }, 1, 50, 1),
+      r('눈보라 시간 초', () => ASCEND.frostGeneral.skill.dur, v => { ASCEND.frostGeneral.skill.dur = v; }, 1, 30, 0.5),
     ], '즉시 적용'],
     ['아브루', [
       r('체력 배수', () => ABRU.HP_MULT, v => { ABRU.HP_MULT = v; }, 1, 10000, 1),
@@ -3939,6 +4716,8 @@ function devActions() {
     ['9분으로', () => { if (state && !state.final) state.time = QUEST.TIME; }],
     ['최후의 보스로', () => { if (state && !state.final) state.time = CONFIG.DURATION - 0.05; }],
     ['용기사 각성', () => { const p = me(); if (!p) return; if (p.weaponKey !== 'sword') return; p.element = 'fire'; p.level = Math.max(p.level, 50); recalcStats(p); if (checkAscend(state, p, true) && !p.choices) { p.choices = rollChoices(state, p, 3); p.choiceSeq++; } }],
+    ['혹한의 장군 각성', () => { const p = me(); if (!p) return; if (p.weaponKey !== 'greatsword') return; p.element = 'ice'; p.level = Math.max(p.level, 50); recalcStats(p); if (checkAscend(state, p, true) && !p.choices) { p.choices = rollChoices(state, p, 3); p.choiceSeq++; } }],
+    ['심판자 각성', () => { const p = me(); if (!p) return; if (p.weaponKey !== 'spear') return; p.element = 'light'; p.level = Math.max(p.level, 50); recalcStats(p); if (checkAscend(state, p, true) && !p.choices) { p.choices = rollChoices(state, p, 3); p.choiceSeq++; } }],
     ['스킬 충전', () => { const p = me(); if (p && p.skill) p.skill.ready = true; }],
     ['아브루 체력 51%', () => { const b = state && state.enemies.find(e => e.raid); if (b) b.hp = b.maxHp * 0.51; }],
     ['아브루 체력 3%', () => { const b = state && state.enemies.find(e => e.raid); if (b && b.raid.half) b.hp = b.maxHp * 0.03; }],
